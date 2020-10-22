@@ -1,5 +1,3 @@
-(* type action_amount = string list *)
-
 type command =
   | Raise of int
   | Start
@@ -14,8 +12,8 @@ exception Malformed
 exception InsufficientFunds
 
 
-(* [rid_spaces object_phrase] is a helper function for parse_branch that takes
-   in a string list [object_phrase] which represents the object_phrase, and gets
+(* [rid_spaces cmd_lst] is a helper function for parse_branch that takes
+   in a string list [cmd_lst] which represents the command, and gets
    rid of trailing or leading spaces in each element and then filters for only
    those elements which are empty strings. *)
 let rid_spaces cmd_lst : string list =
@@ -28,7 +26,6 @@ let parse (str : string) : command =
   let open String in
   let cmd_lst = str |> trim |> split_on_char ' ' |> rid_spaces in
   match cmd_lst with
-  | [] ->  raise Malformed
   | "start" :: [] -> Start
   | "hand" :: [] -> Hand
   | "table" :: [] -> Table

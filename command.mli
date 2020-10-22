@@ -1,16 +1,4 @@
 (** Parsing of player commands in a game of virtual poker *)
-open Poker
-open State
-
-
-(** The [action_amount] type represents a phrase which has an action and 
-    perhaps also an amount.
-
-    Requires:
-    1. action_amount is not permitted to be the empty list
-    2. The first string in [action_amount] is "Raise"
-    3. The second string is a number [0..9] *)
-(* type action_amount = string * int *)
 
 
 (** A command consists of an action and possibly an action amount as well. For
