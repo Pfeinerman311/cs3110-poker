@@ -17,9 +17,6 @@ test:
 
 play:
 	$(OCAMLBUILD) $(MAIN) && ./$(MAIN)
-
-check:
-	bash checkenv.sh && bash checktypes.sh
 	
 clean:
 	ocamlbuild -clean

@@ -43,6 +43,26 @@ let pp_list pp_elt lst =
    End helper functions.
  ********************************************************************)
 
+let pot_test  
+    (name: string)   
+    (players: player list)
+    (expected: int) : test = 
+  let state = match (init_state players) with
+    | Illegal -> failwith("Illegal Raise should be legal")
+    | Legal t -> t
+  in
+  let mid = match raise state (List.hd players) 50 with
+    | Illegal -> failwith("Illegal Raise should be legal")
+    | Legal t -> t
+  in
+  let final = match raise mid (List.hd (List.tl players) ) 250 with
+    | Illegal -> failwith("Illegal Raise should be legal")
+    | Legal t -> t
+  in
+  name >:: (fun _ ->
+      assert_equal expected (get_pot final)
+        ~printer:string_of_int)
+
 let poker_tests = 
   [
 
@@ -53,8 +73,11 @@ let command_tests =
 
   ]
 
+let player_names = ["Alice";"Bob"]
+let start_stack = 1000
+let players = create_players player_names start_stack
 let state_tests = [
-
+  pot_test "simple pot increase test with a player raising" players 300
 ]
 
 let suite =
