@@ -37,7 +37,8 @@ let raise state player amount =
       if Poker.get_ID x = Poker.get_ID player then 
         Poker.alter_stack x (-(amount+state.call_cost))
       else x) state.players in 
-    Legal {state with players =  new_players; pot = state.pot + amount;
+    Legal {state with players =  new_players; 
+                      pot = state.pot + state.call_cost + amount;
                       call_cost = state.call_cost + amount}
 
 let call state player = 
