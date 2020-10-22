@@ -1,3 +1,8 @@
+type player = {
+  name : string
+  (**TODO *)
+}
+
 type rank = Two | Three | Four | Five | Six | Seven | Eight | Nine
           | Ten | Jack | Queen | King | Ace
 
@@ -17,3 +22,7 @@ let rec deck_builder ranks deck =
 
 let deck = 
   deck_builder ranks []
+
+
+let get_stack p =  
+  failwith "Unimplemented"
