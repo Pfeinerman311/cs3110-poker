@@ -2,14 +2,13 @@ type command =
   | Raise of int
   | Start
   | Hand
+  | Hole
   | Table
   | Call
   | Fold
   | Quit
 
 exception Malformed
-
-exception InsufficientFunds
 
 
 (* [rid_spaces cmd_lst] is a helper function for parse_branch that takes

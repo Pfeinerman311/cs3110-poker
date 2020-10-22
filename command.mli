@@ -8,15 +8,12 @@ type command =
   | Raise of int
   | Start
   | Hand
+  | Hole
   | Table
   | Call
   | Fold
   | Quit
 
-
-(** Insufficient funds is raised when a player does not have enough coins
-    to play the command inputted *)
-exception InsufficientFunds
 
 (** Insufficient funds is raised when a player's input string consists of
     anything other than "raise" and has more  *)
