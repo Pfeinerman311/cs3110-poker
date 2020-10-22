@@ -38,16 +38,20 @@ exception Malformed
 (** [parse str] parses a player's input into a [command], as follows. The first
     word will always be the action taken by the player. This can be to raise the
     bet, start the game, show your hand, call, fold for the round, or quit the 
-    game. If there is a substring following the action, then the command is of
-    type [action_amount].
+    game.
 
-    Requires: [str] contains only alphanumeric (A-Z, a-z, 0-9) and space 
+    Requires: 
+    1. [str] contains only lowercase alphanumeric (a-z, 0-9) and space 
     characters (only ASCII character code 32; not tabs or newlines, etc.).
+    2. If there is a substring following the action, then the command is 
+    Raise and the substring consists of a string representation of an int.
 
     Raises: [Malformed] if the command is malformed. A command
     is {i malformed} if the string contains no action,
     or if the action is "raise" and there is not a number following it,
-    or if the action is not "raise" but there is something following it. *)
+    or if the action is not "raise" but there is something following it.
+    [Failure "int_of_string"] if the substring following "raise" is not a
+    string representation of an int *)
 val parse : string -> command
 
 
