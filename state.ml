@@ -17,29 +17,36 @@ let init_state players =
   else Illegal
 
 let current_player state = 
-  failwith "Unimplemented"
+  state.player_to_act
 
 let get_players state = 
-  failwith "Unimplemented"
+  state.players
 
 let get_community_cards state = 
-  failwith "Unimplemented"
+  state.community_cards
 
 let get_pot state = 
   state.pot
 
 let get_call_cost state = 
-  failwith "Unimplemented"
+  state.call_cost
 
 let raise state player amount = 
-  if amount > Poker.get_stack player then Illegal
+  if amount + state.call_cost > Poker.get_stack player || amount < 0 then Illegal
   else let new_players = List.map (fun x -> 
-      if Poker.get_ID x = Poker.get_ID player then Poker.alter_stack x (-amount)
+      if Poker.get_ID x = Poker.get_ID player then 
+        Poker.alter_stack x (-(amount+state.call_cost))
       else x) state.players in 
-    Legal {state with players =  new_players; pot = state.pot + amount}
+    Legal {state with players =  new_players; pot = state.pot + amount;
+                      call_cost = state.call_cost + amount}
 
 let call state player = 
-  failwith "Unimplemented"
+  if state.call_cost > Poker.get_stack player then Illegal
+  else let new_players = List.map (fun x -> 
+      if Poker.get_ID x = Poker.get_ID player then 
+        Poker.alter_stack x (-state.call_cost)
+      else x) state.players in 
+    Legal {state with players =  new_players; pot = state.pot + state.call_cost}
 
 let fold state player = 
   failwith "Unimplemented"
