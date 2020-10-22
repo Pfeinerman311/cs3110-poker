@@ -77,7 +77,7 @@ let player_names = ["Alice";"Bob"]
 let start_stack = 1000
 let players = create_players player_names start_stack
 let state_tests = [
-  pot_test "simple pot increase test with a player raising" players 300
+  pot_test "simple pot increase test with a player raising" players 350
 ]
 
 let suite =
