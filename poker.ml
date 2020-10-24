@@ -72,6 +72,9 @@ let rec hand_combos cards size =
 let deck = 
   deck_builder ranks []
 
+let get_shuffled_deck () = 
+  failwith "Unimplemented"
+
 let get_stack p =  
   p.stack
 
@@ -79,10 +82,19 @@ let get_ID p =
   p.id
 
 let get_best_hand p com_cards= 
-  failwith "Unimplemented 1"
+  failwith "Unimplemented"
 
 let is_active p = 
   p.active
+
+let set_active p = 
+  failwith "Unimplemented"
+
+let set_inactive p = 
+  failwith "Unimplemented"
+
+let set_hole_cards p cards = 
+  failwith "Unimplemented"
 
 let alter_stack p amount = 
   {p with stack = p.stack + amount}
