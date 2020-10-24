@@ -38,6 +38,15 @@ let pp_list pp_elt lst =
     in loop 0 "" lst
   in "[" ^ pp_elts lst ^ "]"
 
+(** [make_cmp_tests] creates test [name] and checks whether [input] and the 
+    [expected_output] are equivalent set-like lists. *)
+let make_cmp_tests
+    (name : string)
+    (input : _ list)
+    (expected_output : _ list) : test =
+  name >:: (fun _ ->
+      assert_equal ~cmp:cmp_set_like_lists ~printer:(pp_list pp_string)
+        input expected_output)
 
 (********************************************************************
    End helper functions.
@@ -63,9 +72,13 @@ let pot_test
       assert_equal expected (get_pot final)
         ~printer:string_of_int)
 
+let c2 = (Two, Spades)
+let c1 = [(Two, Spades); (Five, Clubs); (Ace, Clubs); (Seven, Diamonds);
+          (Jack, Diamonds); (Four, Spades); (Ace, Diamonds)]
+
 let poker_tests = 
   [
-
+    print_string (card_combos )
   ]
 
 let command_tests = 

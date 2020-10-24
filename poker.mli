@@ -9,7 +9,14 @@ type suit = Clubs | Diamonds | Hearts | Spades
 
 type card = rank * suit
 
-type hand
+type hand_tp = Royal_Flush | Straight_Flush | Four_Kind | Full_House
+             | Flush | Straight | Three_Kind | Two_Pair | Pair
+             | High_Card
+
+type hand = {
+  tp : hand_tp;
+  cards : card list;
+}
 
 
 val get_shuffled_deck: unit -> card list

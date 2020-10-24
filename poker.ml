@@ -176,8 +176,10 @@ let rec card_list_to_string_list cards =
   match cards with
   | [] -> []
   | h::t -> [card_to_string h]@(card_list_to_string_list t)
+(**
+   let rec combos_to_string_list cards_list =
+   match cards_list with
+   | [] -> []
+   | h::t -> [card_list_to_string_list h]@(card_list_list_to_string_list t)
 
-let rec card_list_list_to_string_list cards_list =
-  match cards_list with
-  | [] -> []
-  | h::t -> [card_list_to_string_list h]@(card_list_list_to_string_list t)
+*)
