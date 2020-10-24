@@ -50,6 +50,25 @@ let rec deck_builder ranks deck =
   | h::t -> deck_builder t deck@[(h, Clubs); (h, Diamonds); 
                                  (h, Hearts); (h, Spades)]
 
+let shuffle d = 
+  let arr = Array.of_list d in
+  for x = (Array.length arr - 1) downto 1 do
+    let a = Random.int (x + 1) in
+    let b = arr.(a) in
+    arr.(a) <- arr.(x);
+    arr.(x) <- b
+  done;
+  Array.to_list arr
+
+let rec hand_combos cards size =
+  match cards with
+  | [] -> []
+  | h :: t ->
+    let h = List.map (fun x -> h :: x) (hand_combos t (size-1)) in
+    let no_h = hand_combos t size in
+    h@no_h
+
+
 let deck = 
   deck_builder ranks []
 
@@ -63,7 +82,7 @@ let get_best_hand p com_cards=
   failwith "Unimplemented 1"
 
 let is_active p = 
-  failwith "Unimplemented"
+  p.active
 
 let alter_stack p amount = 
   {p with stack = p.stack + amount}

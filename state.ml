@@ -1,3 +1,5 @@
+open Poker
+
 type t = {
   players: Poker.player list;
   big_blind : Poker.player;
