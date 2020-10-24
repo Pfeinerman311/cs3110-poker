@@ -1,0 +1,1 @@
+Install instructions: run 'make' in the terminal. Make sure you are in the path with the MakeFile in it.
