@@ -10,7 +10,9 @@ val init_state : Poker.player list -> result
 
 val current_player : t -> Poker.player
 
-val get_players : t -> Poker.player list 
+val get_players : t -> Poker.player list
+
+val get_big_blind : t -> Poker.player
 
 val get_community_cards : t -> Poker.card list
 

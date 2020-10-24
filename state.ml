@@ -23,6 +23,9 @@ let current_player state =
 let get_players state = 
   state.players
 
+let get_big_blind state =
+  state.big_blind
+
 let get_community_cards state = 
   state.community_cards
 

@@ -126,6 +126,9 @@ let get_stack p =
 let get_ID p =
   p.id
 
+let get_name p =
+  p.name
+
 let get_best_hand p com_cards= 
   failwith "Unimplemented"
 

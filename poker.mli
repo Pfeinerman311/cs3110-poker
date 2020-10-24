@@ -29,6 +29,8 @@ val get_stack : player -> int
 
 val get_ID : player -> int
 
+val get_name : player -> string
+
 val is_active : player -> bool
 
 val set_hole_cards : player -> card list -> player
