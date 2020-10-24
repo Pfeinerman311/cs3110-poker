@@ -2,7 +2,12 @@
 type player
 
 (** The abstract type of values representing a card *)
-type card
+type rank = Two | Three | Four | Five | Six | Seven | Eight | Nine
+          | Ten | Jack | Queen | King | Ace
+
+type suit = Clubs | Diamonds | Hearts | Spades
+
+type card = rank * suit
 
 type hand
 
@@ -10,6 +15,8 @@ type hand
 val get_shuffled_deck: unit -> card list
 
 (** val compare : hand -> hand -> int *)
+
+val card_combos : card list -> int -> (card list) list
 
 val get_stack : player -> int
 

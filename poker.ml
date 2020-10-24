@@ -1,3 +1,6 @@
+exception UnknownRank
+exception UnknownSuit
+
 type rank = Two | Three | Four | Five | Six | Seven | Eight | Nine
           | Ten | Jack | Queen | King | Ace
 
@@ -17,19 +20,61 @@ let ranks =
   [Two; Three; Four; Five; Six; Seven; Eight; Nine; Ten; 
    Jack; Queen; King; Ace]
 
-type hand_type = Royal_Flush | Straight_Flush | Four_Kind | Full_House
-               | Flush | Straight | Three_Kind | Two_Pair | Pair
-               | High_Card
+type hand_tp = Royal_Flush | Straight_Flush | Four_Kind | Full_House
+             | Flush | Straight | Three_Kind | Two_Pair | Pair
+             | High_Card
 
 type hand = {
-  tp : hand_type;
+  tp : hand_tp;
   cards : card list;
 }
 
-(**
-   let compare = 
-   failwith "Unimplemented"
-*)
+let hand_type hand =
+  match hand with
+  | (h, t) -> h
+
+let hand_cards hand =
+  match hand with
+  | (h, t) -> t
+
+let card_rank card =
+  match card with
+  | (h, t) -> h
+
+let card_suit card =
+  match card with
+  | (h, t) -> t
+
+let rank_to_int rank =
+  match rank with
+  | Two -> 2
+  | Three -> 3
+  | Four -> 4
+  | Five -> 5
+  | Six -> 6
+  | Seven -> 7
+  | Eight -> 8
+  | Nine -> 9
+  | Ten -> 10
+  | Jack -> 11
+  | Queen -> 12
+  | King -> 13
+  | Ace -> 14
+
+let suit_to_int suit =
+  match suit with
+  | Clubs -> 0
+  | Diamonds -> 1
+  | Hearts -> 2
+  | Spades -> 3
+
+
+let compare c1 c2 = 
+  let c1_rank = c1 |> card_rank |> rank_to_int in
+  let c2_rank = c2 |> card_rank |> rank_to_int in
+  match c1_rank - c2_rank with
+  | 0 -> (c1 |> card_suit |> suit_to_int) - (c2 |> card_suit |> suit_to_int)
+  | x -> x
 
 let create_player name id stack =
   let p = {name= name;id=id;active=true;stack=stack;hole_cards=[]} in
@@ -60,12 +105,12 @@ let shuffle d =
   done;
   Array.to_list arr
 
-let rec hand_combos cards size =
+let rec card_combos cards size =
   match cards with
   | [] -> []
-  | h :: t ->
-    let h = List.map (fun x -> h :: x) (hand_combos t (size-1)) in
-    let no_h = hand_combos t size in
+  | h::t ->
+    let h = List.map (fun x -> h::x) (card_combos t (size-1)) in
+    let no_h = card_combos t size in
     h@no_h
 
 
@@ -98,3 +143,41 @@ let set_hole_cards p cards =
 
 let alter_stack p amount = 
   {p with stack = p.stack + amount}
+
+let rank_to_string rank =
+  match rank with
+  | Two -> "Two"
+  | Three -> "Three"
+  | Four -> "Four"
+  | Five -> "Five"
+  | Six -> "Six"
+  | Seven -> "Seven"
+  | Eight -> "Eight"
+  | Nine -> "Nine"
+  | Ten -> "Ten"
+  | Jack -> "Jack"
+  | Queen -> "Queen"
+  | King -> "King"
+  | Ace -> "Ace"
+
+let suit_to_string suit =
+  match suit with
+  | Clubs -> "Clubs"
+  | Diamonds -> "Diamonds"
+  | Hearts -> "Hearts"
+  | Spades -> "Spades"
+
+let card_to_string card =
+  let rank = card |> card_rank |> rank_to_string in
+  let suit = card |> card_suit |> suit_to_string in
+  String.concat "" ["("; rank; " of "; suit; ")"]
+
+let rec card_list_to_string_list cards =
+  match cards with
+  | [] -> []
+  | h::t -> [card_to_string h]@(card_list_to_string_list t)
+
+let rec card_list_list_to_string_list cards_list =
+  match cards_list with
+  | [] -> []
+  | h::t -> [card_list_to_string_list h]@(card_list_list_to_string_list t)
