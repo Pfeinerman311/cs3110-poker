@@ -121,7 +121,7 @@ let deck =
   deck_builder ranks []
 
 let get_shuffled_deck () = 
-  failwith "Unimplemented"
+  shuffle deck
 
 let get_stack p =  
   p.stack
