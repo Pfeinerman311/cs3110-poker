@@ -72,6 +72,30 @@ let pot_test
       assert_equal expected (get_pot final)
         ~printer:string_of_int)
 
+let rec players_have_2_cards players acc = 
+  match players with 
+  | [] -> acc
+  | h::t -> if List.length (Poker.get_hole_cards h) = 2 then 
+      players_have_2_cards t (acc && true)
+    else
+      players_have_2_cards t (acc && false)
+
+let deal_test
+    (name: string)   
+    (players: player list) = 
+  let state = match (init_state players) with
+    | Illegal -> failwith("Illegal Raise should be legal")
+    | Legal t -> t
+  in
+  let dealt_state = State.deal state in
+  let dealt_players = State.get_players dealt_state in
+  name >:: (fun _ ->
+      assert_bool "not all players had 2 cards" 
+        (players_have_2_cards dealt_players true)
+    )
+
+
+
 let c2 = (Two, Spades)
 let c1 = [(Two, Spades); (Five, Clubs); (Ace, Clubs); (Seven, Diamonds);
           (Jack, Diamonds); (Four, Spades); (Ace, Diamonds)]
@@ -88,9 +112,14 @@ let command_tests =
 
 let player_names = ["Alice";"Bob"]
 let start_stack = 1000
+let extended_player_names = ["Alice";"Bob";"Alice";"Bob";
+                             "Alice";"Bob";"Alice";"Bob"]
 let players = create_players player_names start_stack
+let extended_players = create_players player_names start_stack
 let state_tests = [
-  pot_test "simple pot increase test with a player raising" players 350
+  pot_test "simple pot increase test with a player raising" players 350;
+  deal_test "check 2 players are dealt cards" players;
+  deal_test "Check 8 players are dealt cards" extended_players;
 ]
 
 let suite =
