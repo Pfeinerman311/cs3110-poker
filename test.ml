@@ -78,7 +78,7 @@ let c1 = [(Two, Spades); (Five, Clubs); (Ace, Clubs); (Seven, Diamonds);
 
 let poker_tests = 
   [
-    print_string (card_combos )
+
   ]
 
 let command_tests = 

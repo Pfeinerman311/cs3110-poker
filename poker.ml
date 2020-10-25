@@ -106,12 +106,15 @@ let shuffle d =
   Array.to_list arr
 
 let rec card_combos cards size =
-  match cards with
-  | [] -> []
-  | h::t ->
-    let h = List.map (fun x -> h::x) (card_combos t (size-1)) in
-    let no_h = card_combos t size in
-    h@no_h
+  if size <= 0 then [[]]
+  else
+    match cards with
+    | [] -> []
+    | h::t ->
+      let h = List.map (fun x -> h::x) 
+          (card_combos (List.sort_uniq compare t) (size-1)) in
+      let no_h = card_combos (List.sort_uniq compare t) size in
+      h@no_h
 
 
 let deck = 
@@ -179,10 +182,11 @@ let rec card_list_to_string_list cards =
   match cards with
   | [] -> []
   | h::t -> [card_to_string h]@(card_list_to_string_list t)
-(**
-   let rec combos_to_string_list cards_list =
-   match cards_list with
-   | [] -> []
-   | h::t -> [card_list_to_string_list h]@(card_list_list_to_string_list t)
 
-*)
+let card_list_to_string cards =
+  String.concat ", " (card_list_to_string_list cards)
+
+let rec combos_to_string_list cards_list =
+  match cards_list with
+  | [] -> []
+  | h::t -> [card_list_to_string h]@(combos_to_string_list t)

@@ -47,3 +47,9 @@ val alter_stack : player -> int -> player
 val set_active : player -> player
 
 val set_inactive : player -> player
+
+val card_list_to_string_list : card list -> string list
+
+val card_list_to_string : card list -> string
+
+val combos_to_string_list : (card list) list -> string list
