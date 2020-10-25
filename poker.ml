@@ -132,6 +132,9 @@ let get_ID p =
 let get_name p =
   p.name
 
+let get_hole_cards p = 
+  p.hole_cards
+
 let get_best_hand p com_cards= 
   failwith "Unimplemented"
 
