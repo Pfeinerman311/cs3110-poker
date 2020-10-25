@@ -139,13 +139,13 @@ let is_active p =
   p.active
 
 let set_active p = 
-  failwith "Unimplemented"
+  {p with active=true}
 
 let set_inactive p = 
-  failwith "Unimplemented"
+  {p with active=false}
 
 let set_hole_cards p cards = 
-  failwith "Unimplemented"
+  {p with hole_cards=cards}
 
 let alter_stack p amount = 
   {p with stack = p.stack + amount}
