@@ -143,13 +143,13 @@ let get_action_deal table : State.t =
 
 (* Redundantly similar to the function above, adapted for the sake of time.
    Needs work *)
-let get_action table : State.t =
+let get_action_flop table : State.t =
   let open Poker in
   let open State in
   let open Command in
   print_string  "> ";
   match parse(read_line ()) with
-  | Start -> flop table
+  | Start -> table
   | Hand -> table
   | Hole -> table
   | Table -> table
@@ -171,10 +171,12 @@ let print_action table : unit =
 
 (* Redundantly similar to the function above, adapted for the sake of time.
    Needs work *)
-let print_action_2 table : unit =
-  let updated_table = get_action table in
+let print_action_flop table : unit =
+  let open Poker in
+  let open State in
+  let updated_table = get_action_flop table in
   print_string "\nTABLE INFO ———————————————————————————————————\n";
-  print_state updated_table
+  print_string ("community cards:" ^ (updated_table |> get_community_cards |> card_list_to_string))
 
 (** [play_game f] starts the poker game by requesting a list of names. *)
 let play_game (num_players : int) : unit =
@@ -188,10 +190,10 @@ let play_game (num_players : int) : unit =
   print_state table;
   print_string ("\n\nYOUR OPTIONS ———————————————————————————————————\n");
   print_string ("start: deal the cards" ^ "\n" ^ "quit: end the game." ^ "\n\n");
-  print_action table;
-  print_string ("\n\nYOUR OPTIONS ———————————————————————————————————\n");
-  print_string ("start: put down the flop card" ^ "\n" ^ "quit: end the game." ^ "\n\n");
   print_action table
+(* print_string ("\n\nYOUR OPTIONS ———————————————————————————————————\n");
+   print_string ("start: put down flop card" ^ "\n" ^ "quit: end the game." ^ "\n\n");
+   print_action_flop table *)
 
 (* Not sure if the number prompted for will include the user themselves *)
 (** [main ()] prompts for the game to play, then starts it. *)
