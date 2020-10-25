@@ -147,6 +147,9 @@ let set_inactive p =
 let set_hole_cards p cards = 
   {p with hole_cards=cards}
 
+let get_hole_cards p =
+  p.hole_cards
+
 let alter_stack p amount = 
   {p with stack = p.stack + amount}
 

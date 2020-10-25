@@ -35,6 +35,8 @@ val is_active : player -> bool
 
 val set_hole_cards : player -> card list -> player
 
+val get_hole_cards : player -> card list
+
 val get_best_hand : player -> card list -> hand
 
 val create_player : string -> int -> int -> player

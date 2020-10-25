@@ -67,9 +67,38 @@ let print_big_blind table : unit =
 let print_pot table : unit =
   let open Poker in
   let open State in
-  let open List in
   let pot = table |> get_pot in
   print_string("\nPOT—————————————— " ^ (string_of_int pot))
+
+(* [print_community_cards table] prints the community cards for the game at
+   state [table] *)
+let print_community_cards table : unit =
+  let open Poker in
+  let open State in
+  let open List in
+  let community_cards = 
+    table
+    |> get_community_cards
+    |> card_list_to_string in
+  print_string "\nCOMMUNITY CARDS—— ";
+  print_string (community_cards ^ "\n")
+
+(* [print_hole_cards table] prints the hole cards for player 1, which we assume 
+   here to be the user *)
+let print_hole_cards table : unit =
+  let open Poker in
+  let open State in
+  let open List in
+  let hole_cards = 
+    table
+    |> get_players
+    |> hd
+    |> get_hole_cards
+    |> card_list_to_string in
+  print_string "\nYOUR CARDS——————— ";
+  print_string (hole_cards ^ "\n\n")
+
+
 
 (* [print_state table] prints information about the state [table] *)
 let print_state table : unit =
@@ -79,7 +108,9 @@ let print_state table : unit =
   print_active_players table;
   print_big_blind table;
   print_pot table;
-  print_string ("\nCURRENT PLAYER——— " ^ (table |> current_player |> get_name))
+  print_string ("\nCURRENT PLAYER——— " ^ (table |> current_player |> get_name));
+  print_community_cards table;
+  print_hole_cards table
 
 
 (* [get_action table] takes in the state and either returns the current state of
@@ -110,9 +141,39 @@ let get_action_deal table : State.t =
       | Illegal -> table
     end
 
+(* Redundantly similar to the function above, adapted for the sake of time.
+   Needs work *)
+let get_action table : State.t =
+  let open Poker in
+  let open State in
+  let open Command in
+  print_string  "> ";
+  match parse(read_line ()) with
+  | Start -> flop table
+  | Hand -> table
+  | Hole -> table
+  | Table -> table
+  | Call -> begin match call table (table |> get_players |> List.hd) with
+      | Legal t -> t
+      | Illegal -> table
+    end
+  | Fold -> fold table (table |> get_players |> List.hd)
+  | Quit -> Stdlib.exit 0
+  | Raise c -> begin match raise table (table |> get_players |> List.hd) c with
+      | Legal t -> t
+      | Illegal -> table
+    end
+
 let print_action table : unit =
   let updated_table = get_action_deal table in
-  print_string "\n\nUPDATED TABLE:\n";
+  print_string "\nTABLE INFO ———————————————————————————————————\n";
+  print_state updated_table
+
+(* Redundantly similar to the function above, adapted for the sake of time.
+   Needs work *)
+let print_action_2 table : unit =
+  let updated_table = get_action table in
+  print_string "\nTABLE INFO ———————————————————————————————————\n";
   print_state updated_table
 
 (** [play_game f] starts the poker game by requesting a list of names. *)
@@ -126,7 +187,10 @@ let play_game (num_players : int) : unit =
   print_string ("\nPLAYERS—————————— " ^ (pp_list pp_string name_list));
   print_state table;
   print_string ("\n\nYOUR OPTIONS ———————————————————————————————————\n");
-  print_string ("start: deal the cards" ^ "\n" ^ "quit: end the game." ^ "\n");
+  print_string ("start: deal the cards" ^ "\n" ^ "quit: end the game." ^ "\n\n");
+  print_action table;
+  print_string ("\n\nYOUR OPTIONS ———————————————————————————————————\n");
+  print_string ("start: put down the flop card" ^ "\n" ^ "quit: end the game." ^ "\n\n");
   print_action table
 
 (* Not sure if the number prompted for will include the user themselves *)
