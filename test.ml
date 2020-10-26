@@ -75,7 +75,7 @@ let pot_test
 let rec players_have_2_cards players acc = 
   match players with 
   | [] -> acc
-  | h::t -> if List.length (Poker.get_hole_cards h) = 2 then 
+  | h::t -> if List.length (get_hole_cards h) = 2 then 
       players_have_2_cards t (acc && true)
     else
       players_have_2_cards t (acc && false)
