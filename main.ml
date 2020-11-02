@@ -68,7 +68,7 @@ let print_pot table : unit =
   let open Poker in
   let open State in
   let pot = table |> get_pot in
-  print_string("\nPOT—————————————— " ^ (string_of_int pot))
+  print_string("\n\n | POT: " ^ (string_of_int pot))
 
 (* [print_community_cards table] prints the community cards for the game at
    state [table] *)
@@ -100,17 +100,51 @@ let print_hole_cards table : unit =
 
 
 
+(* [get_player_stacks players] returns a string representation of players' 
+   current information.
+   For example, information for three players, each with a stack of 150 would 
+   be:
+    [ | Player 1-150 | Player 2-150 | Player 3-150 | ]
+*)
+let rec get_player_stacks (players : Poker.player list) (cp_name: string) (bb_name : string) : string =
+  let open Poker in
+  match players with
+  | [] -> " |"
+  | h :: t ->
+    (" | " ^ get_name h ^ "—" ^ (string_of_int (get_stack h))
+     ^ (if get_name h = cp_name then " (Current Player)" else "")
+     ^ (if get_name h = bb_name then " (Big Blind)" else ""))
+    ^ get_player_stacks t cp_name bb_name
+
+
+(* [print_player_stacks players] returns information about the players in the 
+   game. Specifically it prints two lines, the first with name of players and 
+   their stack amounts, the second with their role in the game.
+
+   For example, information for three players, each with a stack of 150, player 
+   1 has the big blind, player 3 is the current player would be:
+   [ | Player1-150 (Big Blind) | Player2-150 | Player3-150 (Current Player) | ]
+*)
+let print_player_info (st : State.t) : unit =
+  let open State in
+  let open Poker in
+  let players = get_players st in
+  let cp_name = get_name ((current_player) st) in
+  let bb_name = get_name ((get_big_blind) st) in
+  print_string (get_player_stacks (players) (cp_name) (bb_name))
+
+
+
 (* [print_state table] prints information about the state [table] *)
-let print_state table : unit =
+let print_state (table : State.t) : unit =
   let open Poker in
   let open State in
   let open Command in
-  print_active_players table;
-  print_big_blind table;
-  print_pot table;
-  print_string ("\nCURRENT PLAYER——— " ^ (table |> current_player |> get_name));
-  print_community_cards table;
-  print_hole_cards table
+  print_string "\n";
+  print_player_info (table);
+  print_pot table
+(* print_community_cards table;
+   print_hole_cards table *)
 
 
 (* [get_action table] takes in the state and either returns the current state of
@@ -141,42 +175,19 @@ let get_action_deal table : State.t =
       | Illegal -> table
     end
 
-(* Redundantly similar to the function above, adapted for the sake of time.
-   Needs work *)
-let get_action_flop table : State.t =
-  let open Poker in
-  let open State in
-  let open Command in
-  print_string  "> ";
-  match parse(read_line ()) with
-  | Start -> table
-  | Hand -> table
-  | Hole -> table
-  | Table -> table
-  | Call -> begin match call table (table |> get_players |> List.hd) with
-      | Legal t -> t
-      | Illegal -> table
-    end
-  | Fold -> fold table (table |> get_players |> List.hd)
-  | Quit -> Stdlib.exit 0
-  | Raise c -> begin match raise table (table |> get_players |> List.hd) c with
-      | Legal t -> t
-      | Illegal -> table
-    end
 
 let print_action table : unit =
   let updated_table = get_action_deal table in
-  print_string "\nTABLE INFO ———————————————————————————————————\n";
+  (* print_string "\nTABLE INFO ———————————————————————————————————\n"; *)
   print_state updated_table
 
-(* Redundantly similar to the function above, adapted for the sake of time.
-   Needs work *)
-let print_action_flop table : unit =
-  let open Poker in
-  let open State in
-  let updated_table = get_action_flop table in
-  print_string "\nTABLE INFO ———————————————————————————————————\n";
-  print_string ("community cards:" ^ (updated_table |> get_community_cards |> card_list_to_string))
+
+
+(* [play_round] is a higher order function that takes in the state of a game
+   [st], the function that transitions the state [trans], and returns the
+   updated state of the poker game *)
+let play_round (st : State.t) (trans : State.t -> State.t) : unit = assert false
+
 
 (** [play_game f] starts the poker game by requesting a list of names. *)
 let play_game (num_players : int) : unit =
@@ -185,8 +196,8 @@ let play_game (num_players : int) : unit =
   let open Command in
   let name_list = get_names num_players in
   let table = build_table name_list 100 in
-  print_string "\nTABLE INFO ———————————————————————————————————\n";
-  print_string ("\nPLAYERS—————————— " ^ (pp_list pp_string name_list));
+  (* print_string "\nTABLE INFO ———————————————————————————————————\n";
+     print_string ("\nPLAYERS—————————— " ^ (pp_list pp_string name_list)); *)
   print_state table;
   print_string ("\n\nYOUR OPTIONS ———————————————————————————————————\n");
   print_string ("start: deal the cards" ^ "\n" ^ "quit: end the game." ^ "\n\n");
