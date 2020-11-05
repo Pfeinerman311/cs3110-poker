@@ -29,6 +29,11 @@ type hand = {
   cards : card list;
 }
 
+type rank_tal = {
+  rank : rank;
+  tally : int;
+}
+
 let hand_type hand =
   match hand with
   | (h, t) -> h
@@ -105,6 +110,120 @@ let shuffle d =
   done;
   Array.to_list arr
 
+let first_card cards =
+  match cards with
+  | [] -> failwith "No cards"
+  | h::t -> h
+
+let rec straight_helper cards n =
+  match cards with
+  | [] -> if n != 5 then failwith "Must be 5 cards." 
+    else true
+  | h::t -> if compare h (first_card t) = -1 
+    then straight_helper t (n+1)
+    else false
+
+let rec straight_check to_check checked =
+  match to_check with
+  | [] -> failwith "No Straight"
+  | h::t -> if straight_helper h 0
+    then {tp = Straight; cards = h}
+    else straight_check t (checked@[h])
+
+let rec flush_helper cards n =
+  match cards with
+  | [] -> if n != 5 then failwith "Must be 5 cards." 
+    else true
+  | h::t -> if card_rank h = (t |> first_card |> card_rank) 
+    then flush_helper t (n+1)
+    else false
+
+let rec flush_check to_check checked =
+  match to_check with
+  | [] -> straight_check checked []
+  | h::t -> if flush_helper h 0
+    then {tp = Flush; cards = h}
+    else flush_check t (checked@[h])
+
+let tal_compare t1 t2 =
+  (rank_to_int t1.rank) -(rank_to_int t2.rank)
+
+let rec tally_upd card tally =
+  match tally with
+  | [] -> [{rank = card_rank card; tally = 1}]
+  | h::t -> if h.rank = card_rank card then
+      {rank = h.rank; tally = h.tally + 1}::t else
+      h::(tally_upd card t)
+
+let rec rank_tally (cards : card list) tally =
+  match cards with
+  | [] -> tally
+  | h::t -> rank_tally t (tally_upd h tally)
+
+let tally_filter cards n =
+  rank_tally cards [] 
+  |> List.filter (fun x -> x.tally = n) 
+  |> List.sort_uniq tal_compare
+
+let get_rank_cards cards rank =
+  List.filter (fun x -> card_rank x = rank) cards
+
+let rec sub_list list n sub =
+  if n = 0 then sub else
+    match list with
+    | [] -> failwith "List isn't big enough."
+    | h::t -> sub_list t (n-1) (h::sub)
+
+let full_house_helper cards tally =
+  match List.rev tally with
+  | [] -> failwith "No Full House."
+  | h::t -> let r1 = h.rank in
+    let sorted = t |> List.sort_uniq tal_compare |> List.rev in
+    match sorted with
+    | [] -> failwith "No Full House."
+    | h::t -> let r2 = h.rank in
+      let f2 = (r2 |> get_rank_cards cards |> List.rev) in
+      let hand = List.sort_uniq compare 
+          (get_rank_cards cards r1)@(sub_list f2 2 []) in
+      {tp = Full_House; cards = hand}
+
+let full_house_check cards =
+  let threes = tally_filter cards 3 in
+  match threes with
+  | [] -> failwith "No Full House."
+  | h::t -> let twos = tally_filter cards 2 in
+    full_house_helper cards (twos@threes)
+
+let four_kind_check cards =
+  match tally_filter cards 4 with
+  | [] -> full_house_check cards
+  | h::t -> {tp = Four_Kind; cards = get_rank_cards cards h.rank}
+
+let straight_flush_helper cards =
+  (straight_helper cards 0) && (flush_helper cards 0)
+
+let rec straight_flush_check to_check checked =
+  match to_check with
+  | [] -> failwith "No straight flush."
+  | h::t -> if straight_flush_helper h
+    then {tp = Straight_Flush; cards = h}
+    else straight_flush_check t (checked@[h])
+
+let royal_helper cards =
+  match cards with
+  | [] -> failwith "No cards."
+  | h::t -> if card_rank h = Jack
+    then straight_flush_helper cards
+    else false
+
+let rec royal_check to_check checked =
+  match to_check with
+  | [] -> straight_flush_check checked []
+  | h::t -> if royal_helper h
+    then {tp = Royal_Flush; cards = h}
+    else royal_check t (checked@[h])
+
+
 let rec card_combos cards size =
   if size <= 0 then [[]]
   else
@@ -134,9 +253,18 @@ let get_name p =
 
 let get_hole_cards p = 
   p.hole_cards
+(**
+   let get_best_hand p com_cards= 
+   let full = (get_hole_cards p)@com_cards in
+   let combos = card_combos full 5 in
+   match royal_check (List.rev combos) [] with
+   | x -> x
+   | exception e ->
+    match four_kind_check full with
+    | (x : hand) -> x
+    | exception e -> 
 
-let get_best_hand p com_cards= 
-  failwith "Unimplemented"
+*)
 
 let is_active p = 
   p.active
@@ -196,3 +324,20 @@ let rec combos_to_string_list cards_list =
   match cards_list with
   | [] -> []
   | h::t -> [card_list_to_string h]@(combos_to_string_list t)
+
+
+(** 
+   let rec flush_check cards n =
+   match cards with
+   | [] -> if n != 5 then failwith "Must be 5 cards." 
+   else true
+   | h::t -> if card_rank h = (t |> first_card |> card_rank) 
+   then flush_check t (n+1)
+   else false
+*)
+(**
+   let rec royal_helper cards =
+   match cards with
+   | [] -> {tp = Royal_Flush; cards = cards}
+   | h::t -> XXX
+*)
