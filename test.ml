@@ -2,6 +2,7 @@ open OUnit2
 open Poker
 open Command
 open State
+open Bot
 
 (** These helper functions are from the A2 release *)
 (********************************************************************
@@ -122,11 +123,34 @@ let state_tests = [
   deal_test "Check 8 players are dealt cards" extended_players;
 ]
 
+module FoldBotInfo = struct
+  let diff = Fold
+  let bot_ID = 0
+  let seed = 0
+end
+
+module MyFoldBot = FoldBot.Make(FoldBotInfo)
+let state = match (init_state players) with
+  | Illegal -> failwith("Illegal Raise should be legal")
+  | Legal t -> t 
+
+let test_foldbot  
+    (name: string)   
+    (bot_command : command ) : test = 
+  name >:: (fun _ ->
+      assert_equal bot_command Fold
+    )
+
+let bot_tests = [
+  test_foldbot "Test fold bot folds" (MyFoldBot.get_action state)
+]
+
 let suite =
   "test suite for CS3110 Poker Project"  >::: List.flatten [
     poker_tests;
     command_tests;
     state_tests;
+    bot_tests;
   ]
 
 let _ = run_test_tt_main suite

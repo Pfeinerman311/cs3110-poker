@@ -1,4 +1,4 @@
-MODULES=poker command state main author
+MODULES=poker command state main author bot foldBot
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)

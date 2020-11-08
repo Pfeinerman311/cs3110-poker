@@ -1,6 +1,7 @@
 #require "ounit2";;
 #require "ANSITerminal";;
 #directory "_build";;
-#load "poker.cmo";;
-#load "command.cmo";;
-#load "state.cmo";;
+#load_rec "poker.cmo";;
+#load_rec "command.cmo";;
+#load_rec "state.cmo";;
+#load_rec "foldBot.cmo";;
