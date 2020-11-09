@@ -98,4 +98,11 @@ let river state =
               deck = remaining_deck;}
 
 let end_round state = 
-  failwith "Unimplemented"
+  let best_hands = List.map (fun x -> 
+      let avil_cards = 
+        List.concat [Poker.get_hole_cards x;state.community_cards] in
+      (x, (Poker.get_best_hand x avil_cards))) state.players in
+  (** 
+     let sorted_best_hands = List.sort (fun x y -> Poker.compare hand)
+  *)
+  failwith "unimplemented"
