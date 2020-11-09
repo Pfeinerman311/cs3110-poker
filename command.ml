@@ -27,6 +27,7 @@ let parse (str : string) : command =
   match cmd_lst with
   | "start" :: [] -> Start
   | "hand" :: [] -> Hand
+  | "hole" :: [] -> Hole
   | "table" :: [] -> Table
   | "call" :: [] -> Call
   | "fold" :: [] -> Fold

@@ -68,7 +68,7 @@ let print_pot table : unit =
   let open Poker in
   let open State in
   let pot = table |> get_pot in
-  print_string("\n\n | POT: " ^ (string_of_int pot))
+  print_string("\n | POT: " ^ (string_of_int pot) ^ "\n")
 
 (* [print_community_cards table] prints the community cards for the game at
    state [table] *)
@@ -80,7 +80,7 @@ let print_community_cards table : unit =
     table
     |> get_community_cards
     |> card_list_to_string in
-  print_string "\nCOMMUNITY CARDS—— ";
+  print_string "\n\nCOMMUNITY CARDS—— ";
   print_string (community_cards ^ "\n")
 
 (* [print_hole_cards table] prints the hole cards for player 1, which we assume 
@@ -134,19 +134,6 @@ let print_player_info (st : State.t) : unit =
   print_string (get_player_stacks (players) (cp_name) (bb_name))
 
 
-
-(* [print_state table] prints information about the state [table] *)
-let print_state (table : State.t) : unit =
-  let open Poker in
-  let open State in
-  let open Command in
-  print_string "\n";
-  print_player_info (table);
-  print_pot table
-(* print_community_cards table;
-   print_hole_cards table *)
-
-
 (* [get_action table] takes in the state and either returns the current state of
    the game [table] or a state with a given transition applied to it.
 
@@ -175,34 +162,86 @@ let get_action_deal table : State.t =
       | Illegal -> table
     end
 
+(* let print_action table : unit =
+   let updated_table = get_action_deal table in
+   (* print_string "\nTABLE INFO ———————————————————————————————————\n"; *)
+   print_state updated_table *)
 
-let print_action table : unit =
-  let updated_table = get_action_deal table in
-  (* print_string "\nTABLE INFO ———————————————————————————————————\n"; *)
-  print_state updated_table
+(* [print_state table] prints information about the state [table], primarily
+   - players (as well as their roles and stack amounts)
+   - the pot
+   - community cards (if any)
+   - the user's hole cards (if any)
+*)
+let print_state (st : State.t) : unit =
+  let open Poker in
+  let open State in
+  let open Command in
+  print_string "\n";
+  print_player_info (st);
+  print_pot st;
+  print_community_cards st;
+  print_hole_cards st
+
+let transition (st : State.t) (trans : State.t -> State.t) : State.t =
+  trans st
 
 
-
-(* [play_round] is a higher order function that takes in the state of a game
-   [st], the function that transitions the state [trans], and returns the
-   updated state of the poker game *)
-let play_round (st : State.t) (trans : State.t -> State.t) : unit = assert false
+let play_bots (st : State.t) : State.t =
+  failwith "Unimplemented"
 
 
-(** [play_game f] starts the poker game by requesting a list of names. *)
+let play_round (st : State.t) (trans : State.t -> State.t) : State.t =
+  let updated_state = transition st trans in
+  updated_state
+
+(* [play_command current_st str] prompts the user, some player in the current
+   game [st] for a commmand, which is parsed to some transition
+   function *)
+let play_command (st : State.t) (str : string) : State.t =
+  let open State in
+  let open Command in
+  let open Poker in
+  match parse(str) with
+  | Start -> st
+  | Hand -> st (* Should show the best hand *)
+  | Hole -> print_hole_cards st; st
+  | Table -> print_community_cards st; st
+  | Call -> begin match call st (st |> get_players |> List.hd) with
+      | Legal new_st -> new_st
+      | Illegal -> st
+    end
+  | Fold -> fold st (st |> get_players |> List.hd)
+  | Raise c -> begin match raise st (st |> get_players |> List.hd) c with
+      | Legal new_st -> new_st
+      | Illegal -> st
+    end
+  | Quit -> Stdlib.exit 0
+
+let rec prompt_user_command (st : State.t) : unit =
+  print_string "Please input a command\n";
+  print_string ("> ");
+  let after_command = play_command st (read_line()) in
+  if after_command = st then prompt_user_command st 
+  else print_string "\n"
+
 let play_game (num_players : int) : unit =
   let open Poker in
   let open State in
   let open Command in
   let name_list = get_names num_players in
   let table = build_table name_list 100 in
-  (* print_string "\nTABLE INFO ———————————————————————————————————\n";
-     print_string ("\nPLAYERS—————————— " ^ (pp_list pp_string name_list)); *)
-  print_state table;
-  print_string ("\n\nYOUR OPTIONS ———————————————————————————————————\n");
-  print_string ("start: deal the cards" ^ "\n" ^ "quit: end the game." ^ "\n\n");
-  print_action table
-(* print_string ("\n\nYOUR OPTIONS ———————————————————————————————————\n");
+  prompt_user_command table;
+  prompt_user_command (deal table)
+(* let deal_state = play_round table deal in
+   print_state deal_state *)
+(* let flop_state = play_round deal_state flop in
+   print_state flop_state;
+   let river_state = play_round flop_state river in
+   print_state river_state *)
+
+
+(* print_string ("\n\nYOUR OPTIONS \n");
    print_string ("start: put down flop card" ^ "\n" ^ "quit: end the game." ^ "\n\n");
    print_action_flop table *)
 
