@@ -99,7 +99,6 @@ let print_hole_cards table : unit =
   print_string (hole_cards ^ "\n\n")
 
 
-
 (* [get_player_stacks players] returns a string representation of players' 
    current information.
    For example, information for three players, each with a stack of 150 would 
@@ -141,26 +140,26 @@ let print_player_info (st : State.t) : unit =
    the state after cards are dealt.
 
    Requires: The user is player 1. *)
-let get_action_deal table : State.t =
-  let open Poker in
-  let open State in
-  let open Command in
-  print_string  "> ";
-  match parse(read_line ()) with
-  | Start -> deal table
-  | Hand -> table
-  | Hole -> table
-  | Table -> table
-  | Call -> begin match call table (table |> get_players |> List.hd) with
+(* let get_action_deal table : State.t =
+   let open Poker in
+   let open State in
+   let open Command in
+   print_string  "> ";
+   match parse(read_line ()) with
+   | Start -> deal table
+   | Hand -> table
+   | Hole -> table
+   | Table -> table
+   | Call -> begin match call table (table |> get_players |> List.hd) with
       | Legal t -> t
       | Illegal -> table
     end
-  | Fold -> fold table (table |> get_players |> List.hd)
-  | Quit -> Stdlib.exit 0
-  | Raise c -> begin match raise table (table |> get_players |> List.hd) c with
+   | Fold -> fold table (table |> get_players |> List.hd)
+   | Quit -> Stdlib.exit 0
+   | Raise c -> begin match raise table (table |> get_players |> List.hd) c with
       | Legal t -> t
       | Illegal -> table
-    end
+    end *)
 
 (* let print_action table : unit =
    let updated_table = get_action_deal table in
@@ -203,7 +202,7 @@ let play_command (st : State.t) (str : string) : State.t =
   let open Command in
   let open Poker in
   match parse(str) with
-  | Start -> st
+  | Start -> deal st
   | Hand -> st (* Should show the best hand *)
   | Hole -> print_hole_cards st; st
   | Table -> print_community_cards st; st
@@ -223,7 +222,7 @@ let rec prompt_user_command (st : State.t) : unit =
   print_string ("> ");
   let after_command = play_command st (read_line()) in
   if after_command = st then prompt_user_command st 
-  else print_string "\n"
+  else print_state after_command; print_string "\n"
 
 let play_game (num_players : int) : unit =
   let open Poker in
