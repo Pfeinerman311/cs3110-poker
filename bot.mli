@@ -5,7 +5,6 @@ type difficulty = Fold | Easy | Medium | Hard
     the type of Info in a [Bot]. *)
 module type BotInfo = sig
   val diff : difficulty
-  val bot_ID : int
   val seed : int
 end
 
@@ -15,7 +14,8 @@ module type Bot = sig
   (** [Info] is a module representing information about the bot*)
   module Info : BotInfo
 
-  (** [get_action t] take a game state and produces a command *)
+  (** [get_action s] take a game state and produces a command.
+      The bot acts from the perspective of [State.current_player s] *)
   val get_action : State.t -> Command.command
 end
 

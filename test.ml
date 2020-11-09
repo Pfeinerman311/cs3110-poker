@@ -125,7 +125,6 @@ let state_tests = [
 
 module FoldBotInfo = struct
   let diff = Fold
-  let bot_ID = 0
   let seed = 0
 end
 
