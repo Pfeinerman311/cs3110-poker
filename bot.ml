@@ -3,7 +3,6 @@ type difficulty = Fold | Easy | Medium | Hard
 
 module type BotInfo = sig
   val diff : difficulty
-  val bot_ID : int
   val seed : int
 end
 
