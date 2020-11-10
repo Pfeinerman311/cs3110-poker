@@ -1,6 +1,3 @@
-(** The abstract type of values representing a player *)
-type player
-
 (** The abstract type of values representing a card *)
 type rank = Two | Three | Four | Five | Six | Seven | Eight | Nine
           | Ten | Jack | Queen | King | Ace
@@ -8,6 +5,15 @@ type rank = Two | Three | Four | Five | Six | Seven | Eight | Nine
 type suit = Clubs | Diamonds | Hearts | Spades
 
 type card = rank * suit
+
+(** The abstract type of values representing a player *)
+type player = {
+  name : string;
+  id : int;
+  active: bool;
+  stack : int;
+  hole_cards: card list
+}
 
 type hand_tp = Royal_Flush | Straight_Flush | Four_Kind | Full_House
              | Flush | Straight | Three_Kind | Two_Pair | Pair
@@ -21,7 +27,9 @@ type hand = {
 
 val get_shuffled_deck: unit -> card list
 
-(** val compare : hand -> hand -> int *)
+val compare : card -> card -> int
+
+val hand_compare : hand -> hand -> int
 
 val card_combos : card list -> int -> (card list) list
 
@@ -55,3 +63,7 @@ val card_list_to_string_list : card list -> string list
 val card_list_to_string : card list -> string
 
 val combos_to_string_list : (card list) list -> string list
+
+val tp_to_string : hand_tp -> string
+
+val hand_to_string : hand -> string

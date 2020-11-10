@@ -15,8 +15,8 @@ open Bot
     contain any duplicates.  Second, they must contain the same elements,
     though not necessarily in the same order. *)
 let cmp_set_like_lists lst1 lst2 =
-  let uniq1 = List.sort_uniq compare lst1 in
-  let uniq2 = List.sort_uniq compare lst2 in
+  let uniq1 = List.sort_uniq Stdlib.compare lst1 in
+  let uniq2 = List.sort_uniq Stdlib.compare lst2 in
   List.length lst1 = List.length uniq1
   &&
   List.length lst2 = List.length uniq2
@@ -95,15 +95,41 @@ let deal_test
         (players_have_2_cards dealt_players true)
     )
 
+let hand_comparer h1 h2 =
+  if hand_compare h1 h2 = 0 then true else false
+
+let best_hand_test
+    (name : string)
+    (player : player)
+    (community_cards : card list)
+    (expected_output : hand) : test =
+  name >:: (fun _ ->
+      assert_equal ~cmp:hand_comparer ~printer:(hand_to_string)
+        expected_output (get_best_hand player community_cards)) 
 
 
-let c2 = (Two, Spades)
+
 let c1 = [(Two, Spades); (Five, Clubs); (Ace, Clubs); (Seven, Diamonds);
           (Jack, Diamonds); (Four, Spades); (Ace, Diamonds)]
+let c2 = [(Two, Spades); (Five, Diamonds)]
+let c3 = [(Three, Clubs); (Six, Clubs); (Ace, Clubs); (Seven, Diamonds);
+          (Four, Diamonds)]
+let c4 = [(Two, Spades); (Four, Clubs)]
+let c5 = [(Three, Spades); (Four, Clubs)]
+
+let p1 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = c4}
+let p2 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = c5}
+
+let h1 = {tp = Pair; cards = [(Four, Clubs); (Four, Diamonds)]}
+let h2 = {tp = Two_Pair; cards = [(Three, Clubs); (Three, Spades); 
+                                  (Four, Clubs); (Four, Diamonds)]}
+let h5 = {tp = Straight; cards = [(Two, Spades); (Three, Clubs); 
+                                  (Four, Diamonds); (Five, Diamonds); (Six, Clubs);]}
 
 let poker_tests = 
   [
-
+    best_hand_test "Parker pair test" p1  c3 h1;
+    best_hand_test "Parker two pair test" p2 c3 h2
   ]
 
 let command_tests = 
