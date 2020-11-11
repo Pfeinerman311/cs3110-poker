@@ -3,7 +3,7 @@
 
 (* [get_command str] parses a user's input into a Command.command which is then
    processed into a state transition or some response from the interface. *)
-val play_command : State.t -> string -> State.t
+val play_command : State.t -> Command.command -> State.t
 
 (* [play_bots st] is a function that processes the actions of the "bots," aka
    the n-1 players at the table that are not the user. This necessarily occurs

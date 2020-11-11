@@ -1,4 +1,7 @@
+type stage = Init | Deal | Flop | Turn | River
+
 type t = {
+  game_stage: stage;
   players: Poker.player list;
   big_blind : Poker.player;
   player_to_act: Poker.player;
@@ -12,10 +15,13 @@ type result = Legal of t | Illegal
 
 let init_state players = 
   if 1< List.length players && List.length players < 10 then
-    Legal {players = players; big_blind= List.hd players;
+    Legal {game_stage = Init; players = players; big_blind= List.hd players;
            player_to_act = List.hd (List.tl players); pot = 0;
            community_cards = []; call_cost=0; deck=[]}
   else Illegal
+
+let get_stage state =
+  state.game_stage
 
 let current_player state = 
   state.player_to_act
@@ -34,6 +40,15 @@ let get_pot state =
 
 let get_call_cost state = 
   state.call_cost
+
+let incr_stage state =
+  let new_stage =
+    match get_stage state with
+    | Init -> Deal
+    | Deal -> Flop
+    | _ -> River
+  in
+  {state with game_stage = new_stage}
 
 let raise state player amount = 
   if amount + state.call_cost > Poker.get_stack player || amount < 0 then Illegal
