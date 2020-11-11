@@ -41,6 +41,9 @@ let get_pot state =
 let get_call_cost state = 
   state.call_cost
 
+let get_deck state =
+  state.deck
+
 let incr_stage state =
   let new_stage =
     match get_stage state with

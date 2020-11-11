@@ -137,6 +137,10 @@ let command_tests =
 
   ]
 
+let community_cards_string (st : State.t) : string =
+  st |> State.get_community_cards |> Poker.card_list_to_string
+
+
 let player_names = ["Alice";"Bob"]
 let start_stack = 1000
 let extended_player_names = ["Alice";"Bob";"Alice";"Bob";
@@ -147,6 +151,46 @@ let state_tests = [
   pot_test "simple pot increase test with a player raising" players 350;
   deal_test "check 2 players are dealt cards" players;
   deal_test "Check 8 players are dealt cards" extended_players;
+]
+
+
+let ex_st =
+  let open State in
+  let open Poker in
+  let player_names = ["Cesar"; "Dean"; "Parker"] in
+  let start_stack = 100 in
+  let players = create_players player_names start_stack in
+  match init_state players with
+  | Legal st -> st
+  | Illegal -> failwith "Illegal"
+
+let ex_deal_st = deal ex_st
+let ex_deal_st = flop ex_deal_st
+
+let get_community_card_test 
+    (name : string)
+    (st : State.t)
+    (expected_output : Poker.card list)
+  : test =
+  name >:: (fun _ -> assert_equal expected_output (get_community_cards st)) 
+
+let community_card_test 
+    (name : string)
+    (st : State.t)
+    (expected_output : string)
+  : test =
+  name >:: (fun _ -> assert_equal expected_output (community_cards_string st) ~printer: pp_string) 
+
+let main_tests = [
+  community_card_test "In Init stage community cards should not be dealt" (ex_st) "";
+  community_card_test "In Deal stage community cards should not be dealt" (deal ex_st) "";
+  (* The tests below are passing, but shouldn't *)
+  get_community_card_test 
+    "In Flop stage community cards should be dealt, aka a non-empty Poker.card list" 
+    (flop ex_st) [];
+  get_community_card_test 
+    "In Turn stage community cards should be dealt, aka a non-empty Poker.card list" 
+    (turn ex_st) [];
 ]
 
 module FoldBotInfo = struct
@@ -175,6 +219,7 @@ let suite =
     poker_tests;
     command_tests;
     state_tests;
+    main_tests;
     bot_tests;
   ]
 

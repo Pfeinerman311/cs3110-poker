@@ -24,6 +24,8 @@ val get_pot : t -> int
 
 val get_call_cost : t -> int
 
+val get_deck : t -> Poker.card list
+
 val incr_stage : t -> t
 
 val raise : t -> Poker.player -> int -> result
