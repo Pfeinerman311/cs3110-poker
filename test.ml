@@ -95,7 +95,19 @@ let deal_test
         (players_have_2_cards dealt_players true)
     )
 
-
+let community_test
+    (name : string)
+    (players: player list)
+    (expected : int) = 
+  let state = match (init_state players) with
+    | Illegal -> failwith("Illegal intial state")
+    | Legal t -> t
+  in
+  let dealt_state = State.deal state |> State.flop in
+  let community_cards = State.get_community_cards dealt_state in
+  name >:: (fun _ ->
+      assert_equal expected (List.length community_cards)
+        ~printer:string_of_int)
 
 let c2 = (Two, Spades)
 let c1 = [(Two, Spades); (Five, Clubs); (Ace, Clubs); (Seven, Diamonds);
@@ -121,6 +133,7 @@ let state_tests = [
   pot_test "simple pot increase test with a player raising" players 350;
   deal_test "check 2 players are dealt cards" players;
   deal_test "Check 8 players are dealt cards" extended_players;
+  community_test "check that community has 3 cards post flop" players 3;
 ]
 
 module FoldBotInfo = struct

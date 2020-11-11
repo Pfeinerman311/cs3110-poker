@@ -14,7 +14,7 @@ let init_state players =
   if 1< List.length players && List.length players < 10 then
     Legal {players = players; big_blind= List.hd players;
            player_to_act = List.hd (List.tl players); pot = 0;
-           community_cards = []; call_cost=0; deck=[]}
+           community_cards = []; call_cost=0; deck=Poker.get_shuffled_deck () }
   else Illegal
 
 let current_player state = 
@@ -78,10 +78,8 @@ let rec deal_helper players deck acc =
     deal_helper t (List.tl remaining_deck) (new_player::acc)
 
 let deal state =
-  let deck = Poker.get_shuffled_deck () in
   let rev_player = List.rev state.players in
-  {state with players= deal_helper rev_player deck [] }
-
+  {state with players= deal_helper rev_player state.deck[] }
 
 let flop state = 
   let flop_cards, remaining_deck = first_n state.deck 3 in
