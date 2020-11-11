@@ -73,6 +73,19 @@ let suit_to_int suit =
   | Hearts -> 2
   | Spades -> 3
 
+let tp_to_int tp =
+  match tp with
+  | High_Card -> 0
+  | Pair -> 1
+  | Two_Pair -> 2
+  | Three_Kind -> 3
+  | Straight -> 4
+  | Flush -> 5
+  | Full_House -> 6
+  | Four_Kind -> 7
+  | Straight_Flush -> 8
+  | Royal_Flush -> 9
+
 
 let compare c1 c2 = 
   let c1_rank = c1 |> card_rank |> rank_to_int in
@@ -80,6 +93,11 @@ let compare c1 c2 =
   match c1_rank - c2_rank with
   | 0 -> (c1 |> card_suit |> suit_to_int) - (c2 |> card_suit |> suit_to_int)
   | x -> x
+
+let hand_compare h1 h2 =
+  let h1_type = h1.tp |> tp_to_int in
+  let h2_type = h2.tp |> tp_to_int in
+  h1_type - h2_type
 
 let create_player name id stack =
   let p = {name= name;id=id;active=true;stack=stack;hole_cards=[]} in
@@ -114,6 +132,7 @@ let first_card cards =
   match cards with
   | [] -> failwith "No cards"
   | h::t -> h
+
 let tal_compare t1 t2 =
   (rank_to_int t1.rank) -(rank_to_int t2.rank)
 
@@ -358,6 +377,23 @@ let rec combos_to_string_list cards_list =
   | [] -> []
   | h::t -> [card_list_to_string h]@(combos_to_string_list t)
 
+let tp_to_string tp =
+  match tp with
+  | High_Card -> "High Card"
+  | Pair -> "Pair"
+  | Two_Pair -> "Two Pair"
+  | Three_Kind -> "Three of a Kind"
+  | Straight -> "Straight"
+  | Flush -> "Flush"
+  | Full_House -> "Full House"
+  | Four_Kind -> "Four of a Kind"
+  | Straight_Flush -> "Straight Flush"
+  | Royal_Flush -> "Royal Flush"
+
+
+let hand_to_string hand =
+  String.concat " of " 
+    [tp_to_string hand.tp; card_list_to_string hand.cards]
 
 (** 
    let rec flush_check cards n =

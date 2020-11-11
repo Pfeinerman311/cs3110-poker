@@ -10,6 +10,8 @@ type command =
 
 exception Malformed
 
+exception InadequateCommand of string
+
 
 (* [rid_spaces cmd_lst] is a helper function for parse_branch that takes
    in a string list [cmd_lst] which represents the command, and gets

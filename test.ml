@@ -15,8 +15,8 @@ open Bot
     contain any duplicates.  Second, they must contain the same elements,
     though not necessarily in the same order. *)
 let cmp_set_like_lists lst1 lst2 =
-  let uniq1 = List.sort_uniq compare lst1 in
-  let uniq2 = List.sort_uniq compare lst2 in
+  let uniq1 = List.sort_uniq Stdlib.compare lst1 in
+  let uniq2 = List.sort_uniq Stdlib.compare lst2 in
   List.length lst1 = List.length uniq1
   &&
   List.length lst2 = List.length uniq2
@@ -109,19 +109,51 @@ let community_test
       assert_equal expected (List.length community_cards)
         ~printer:string_of_int)
 
-let c2 = (Two, Spades)
+let hand_comparer h1 h2 =
+  if hand_compare h1 h2 = 0 then true else false
+
+let best_hand_test
+    (name : string)
+    (player : player)
+    (community_cards : card list)
+    (expected_output : hand) : test =
+  name >:: (fun _ ->
+      assert_equal ~cmp:hand_comparer ~printer:(hand_to_string)
+        expected_output (get_best_hand player community_cards)) 
+
+
+
 let c1 = [(Two, Spades); (Five, Clubs); (Ace, Clubs); (Seven, Diamonds);
           (Jack, Diamonds); (Four, Spades); (Ace, Diamonds)]
+let c2 = [(Two, Spades); (Five, Diamonds)]
+let c3 = [(Three, Clubs); (Six, Clubs); (Ace, Clubs); (Seven, Diamonds);
+          (Four, Diamonds)]
+let c4 = [(Two, Spades); (Four, Clubs)]
+let c5 = [(Three, Spades); (Four, Clubs)]
+
+let p1 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = c4}
+let p2 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = c5}
+
+let h1 = {tp = Pair; cards = [(Four, Clubs); (Four, Diamonds)]}
+let h2 = {tp = Two_Pair; cards = [(Three, Clubs); (Three, Spades); 
+                                  (Four, Clubs); (Four, Diamonds)]}
+let h5 = {tp = Straight; cards = [(Two, Spades); (Three, Clubs); 
+                                  (Four, Diamonds); (Five, Diamonds); (Six, Clubs);]}
 
 let poker_tests = 
   [
-
+    best_hand_test "Parker pair test" p1  c3 h1;
+    best_hand_test "Parker two pair test" p2 c3 h2
   ]
 
 let command_tests = 
   [
 
   ]
+
+let community_cards_string (st : State.t) : string =
+  st |> State.get_community_cards |> Poker.card_list_to_string
+
 
 let player_names = ["Alice";"Bob"]
 let start_stack = 1000
@@ -134,6 +166,46 @@ let state_tests = [
   deal_test "check 2 players are dealt cards" players;
   deal_test "Check 8 players are dealt cards" extended_players;
   community_test "check that community has 3 cards post flop" players 3;
+]
+
+
+let ex_st =
+  let open State in
+  let open Poker in
+  let player_names = ["Cesar"; "Dean"; "Parker"] in
+  let start_stack = 100 in
+  let players = create_players player_names start_stack in
+  match init_state players with
+  | Legal st -> st
+  | Illegal -> failwith "Illegal"
+
+let ex_deal_st = deal ex_st
+let ex_deal_st = flop ex_deal_st
+
+let get_community_card_test 
+    (name : string)
+    (st : State.t)
+    (expected_output : Poker.card list)
+  : test =
+  name >:: (fun _ -> assert_equal expected_output (get_community_cards st)) 
+
+let community_card_test 
+    (name : string)
+    (st : State.t)
+    (expected_output : string)
+  : test =
+  name >:: (fun _ -> assert_equal expected_output (community_cards_string st) ~printer: pp_string) 
+
+let main_tests = [
+  community_card_test "In Init stage community cards should not be dealt" (ex_st) "";
+  community_card_test "In Deal stage community cards should not be dealt" (deal ex_st) "";
+  (* The tests below are passing, but shouldn't *)
+  get_community_card_test 
+    "In Flop stage community cards should be dealt, aka a non-empty Poker.card list" 
+    (flop ex_st) [];
+  get_community_card_test 
+    "In Turn stage community cards should be dealt, aka a non-empty Poker.card list" 
+    (turn ex_st) [];
 ]
 
 module FoldBotInfo = struct
@@ -162,6 +234,7 @@ let suite =
     poker_tests;
     command_tests;
     state_tests;
+    main_tests;
     bot_tests;
   ]
 

@@ -33,11 +33,23 @@ let get_name (name_num : int): string =
    a list of their names *)
 let get_names (num_players) : string list =
   print_string ("You have chosen to play with " ^ string_of_int num_players ^ " player(s).\n");
-  let rec add_name = function
+  let rec add_names = function
     | 0 -> []
-    | num -> get_name num :: add_name (num - 1)
+    | num -> get_name num :: add_names (num - 1)
   in
-  add_name num_players
+  List.rev (add_names num_players)
+
+(* [print_stage st] prints the stage in which the state of the game [st] is *)
+let print_stage (st : State.t) : unit =
+  let open Poker in
+  let open State in
+  let label = "\nGame Stage: " in 
+  match get_stage st with
+  | Init -> print_string (label ^ "Initial\n")
+  | Deal -> print_string (label ^ "Deal\n")
+  | Flop -> print_string (label ^ "Flop\n")
+  | Turn -> print_string (label ^ "Turn\n")
+  | River -> print_string (label ^ "River\n")
 
 (* [print_active_players table] takes a state [table] and prints out those
    players which are still in the game, aka, those which have an active field
@@ -56,48 +68,45 @@ let print_active_players table : unit =
 
 (* [print_big_blind table] prints the name of the player in state [table] who
    is the big blind *)
-let print_big_blind table : unit =
-  let open Poker in
-  let open State in
-  let open List in
-  let big_blind_name = table |> get_big_blind |> get_name in
-  print_string("\nBIG BLIND———————— " ^ (pp_string big_blind_name))
+(* let print_big_blind table : unit =
+   let open Poker in
+   let open State in
+   let open List in
+   let big_blind_name = table |> get_big_blind |> get_name in
+   print_string("\nBIG BLIND———————— " ^ (pp_string big_blind_name)) *)
 
 (* [print_pot table] prints the amount in the pot *)
 let print_pot table : unit =
   let open Poker in
   let open State in
   let pot = table |> get_pot in
-  print_string("\n | POT: " ^ (string_of_int pot) ^ "\n")
+  print_string("\n | Pot: " ^ (string_of_int pot) ^ "\n")
 
 (* [print_community_cards table] prints the community cards for the game at
    state [table] *)
-let print_community_cards table : unit =
+let print_community_cards (st : State.t) : unit =
   let open Poker in
   let open State in
   let open List in
   let community_cards = 
-    table
+    st
     |> get_community_cards
     |> card_list_to_string in
-  print_string "\n\nCOMMUNITY CARDS—— ";
-  print_string (community_cards ^ "\n")
+  print_string (" | Community cards: " ^ community_cards ^ "\n")
 
 (* [print_hole_cards table] prints the hole cards for player 1, which we assume 
    here to be the user *)
-let print_hole_cards table : unit =
+let print_hole_cards st : unit =
   let open Poker in
   let open State in
   let open List in
   let hole_cards = 
-    table
+    st
     |> get_players
     |> hd
     |> get_hole_cards
     |> card_list_to_string in
-  print_string "\nYOUR CARDS——————— ";
-  print_string (hole_cards ^ "\n\n")
-
+  print_string (" | Cards: " ^ hole_cards ^ "\n\n")
 
 
 (* [get_player_stacks players] returns a string representation of players' 
@@ -111,7 +120,7 @@ let rec get_player_stacks (players : Poker.player list) (cp_name: string) (bb_na
   match players with
   | [] -> " |"
   | h :: t ->
-    (" | " ^ get_name h ^ "—" ^ (string_of_int (get_stack h))
+    (" | " ^ get_name h ^ " — " ^ (string_of_int (get_stack h))
      ^ (if get_name h = cp_name then " (Current Player)" else "")
      ^ (if get_name h = bb_name then " (Big Blind)" else ""))
     ^ get_player_stacks t cp_name bb_name
@@ -134,40 +143,7 @@ let print_player_info (st : State.t) : unit =
   print_string (get_player_stacks (players) (cp_name) (bb_name))
 
 
-(* [get_action table] takes in the state and either returns the current state of
-   the game [table] or a state with a given transition applied to it.
-
-   For example, ["start"] will be parsed as a command to deal cards and return
-   the state after cards are dealt.
-
-   Requires: The user is player 1. *)
-let get_action_deal table : State.t =
-  let open Poker in
-  let open State in
-  let open Command in
-  print_string  "> ";
-  match parse(read_line ()) with
-  | Start -> deal table
-  | Hand -> table
-  | Hole -> table
-  | Table -> table
-  | Call -> begin match call table (table |> get_players |> List.hd) with
-      | Legal t -> t
-      | Illegal -> table
-    end
-  | Fold -> fold table (table |> get_players |> List.hd)
-  | Quit -> Stdlib.exit 0
-  | Raise c -> begin match raise table (table |> get_players |> List.hd) c with
-      | Legal t -> t
-      | Illegal -> table
-    end
-
-(* let print_action table : unit =
-   let updated_table = get_action_deal table in
-   (* print_string "\nTABLE INFO ———————————————————————————————————\n"; *)
-   print_state updated_table *)
-
-(* [print_state table] prints information about the state [table], primarily
+(* [print_state st] prints information about the state [st], primarily
    - players (as well as their roles and stack amounts)
    - the pot
    - community cards (if any)
@@ -177,62 +153,88 @@ let print_state (st : State.t) : unit =
   let open Poker in
   let open State in
   let open Command in
-  print_string "\n";
+  print_stage st;
   print_player_info (st);
   print_pot st;
   print_community_cards st;
   print_hole_cards st
 
 let transition (st : State.t) (trans : State.t -> State.t) : State.t =
-  trans st
-
+  let open State in
+  let new_stage = incr_stage st in
+  trans new_stage
 
 let play_bots (st : State.t) : State.t =
   failwith "Unimplemented"
-
 
 let play_round (st : State.t) (trans : State.t -> State.t) : State.t =
   let updated_state = transition st trans in
   updated_state
 
-(* [play_command current_st str] prompts the user, some player in the current
-   game [st] for a commmand, which is parsed to some transition
-   function *)
-let play_command (st : State.t) (str : string) : State.t =
+(* [play_command st cmd] takes in a commmand [cmd] from the user and uses it to
+   pattern match it to a new state which is just a transition function applied
+   to the input state [st] *)
+let rec play_command (st : State.t) (cmd : Command.command) : State.t =
   let open State in
   let open Command in
   let open Poker in
-  match parse(str) with
-  | Start -> st
-  | Hand -> st (* Should show the best hand *)
+  let to_next_stage =
+    match get_stage st with
+    | Init -> deal
+    | Deal -> flop
+    | Flop -> turn
+    | _ -> river
+  in
+  match cmd with
+  | Start -> print_community_cards (to_next_stage st); play_round st to_next_stage
+  | Hand -> print_string "Your best hand is: ______\n"; st (* Should show the user's best hand *)
   | Hole -> print_hole_cards st; st
-  | Table -> print_community_cards st; st
+  | Table -> print_community_cards st; print_string "\n"; st
   | Call -> begin match call st (st |> get_players |> List.hd) with
-      | Legal new_st -> new_st
-      | Illegal -> st
+      | Legal new_st -> print_string "You have chosen to call.\n"; new_st
+      | Illegal -> print_string "You are unable to call.\n"; st
     end
-  | Fold -> fold st (st |> get_players |> List.hd)
+  | Fold -> print_string "You have chosen to fold\n"; fold st (st |> get_players |> List.hd)
   | Raise c -> begin match raise st (st |> get_players |> List.hd) c with
-      | Legal new_st -> new_st
-      | Illegal -> st
+      | Legal new_st -> print_string ("You have chosen to raise" ^ string_of_int c ^ ".\n"); new_st
+      | Illegal -> print_string "You are unable to raise thsi amount.\n"; st
     end
-  | Quit -> Stdlib.exit 0
+  | Quit -> print_string "\n\nThanks for playing!\n\n"; Stdlib.exit 0
 
-let rec prompt_user_command (st : State.t) : unit =
+
+let rec prompt_user_command (st : State.t) : State.t =
+  let open Command in
   print_string "Please input a command\n";
+  print_string " | start | hand | hole | table | call | fold | raise | quit |\n" ;
   print_string ("> ");
-  let after_command = play_command st (read_line()) in
-  if after_command = st then prompt_user_command st 
-  else print_string "\n"
+  let input = read_line() in
+  match parse input with
+  | exception Malformed -> print_string "This command is not appropriate, please enter one of the commands above.\n"; prompt_user_command st
+  | cmd -> 
+    begin match play_command st cmd with
+      | same_st when same_st = st -> prompt_user_command same_st
+      | new_st -> print_state new_st; new_st
+    end
+
+
+(* let rec game_flow (st : State.t) : State.t =
+   let open State in
+   if get_stage st = River then (print_string "Good job! Game over."; st)
+   else (prompt_user_command st; game_flow (st)) *)
+
+
 
 let play_game (num_players : int) : unit =
   let open Poker in
   let open State in
   let open Command in
   let name_list = get_names num_players in
-  let table = build_table name_list 100 in
-  prompt_user_command table;
-  prompt_user_command (deal table)
+  let init_st = build_table name_list 100 in
+  let deal_st = prompt_user_command init_st in
+  let flop_st = prompt_user_command deal_st in
+  let turn_st = prompt_user_command flop_st in
+  let river_st = prompt_user_command turn_st in
+  print_string "Game over, nice!"
 (* let deal_state = play_round table deal in
    print_state deal_state *)
 (* let flop_state = play_round deal_state flop in
@@ -241,11 +243,14 @@ let play_game (num_players : int) : unit =
    print_state river_state *)
 
 
-(* print_string ("\n\nYOUR OPTIONS \n");
-   print_string ("start: put down flop card" ^ "\n" ^ "quit: end the game." ^ "\n\n");
-   print_action_flop table *)
+(* [try_game input] is simply a way of constraining the user's input when 
+   prompted for the number of players they would like to play with. *)
+let rec try_game (input : string) =
+  match int_of_string input with
+  | exception (Failure s) -> print_string ("'" ^ input ^ "'" ^ " is not a valid number. Please enter an integer from 2-10\n"); print_string "> "; try_game (read_line())
+  | x when (x > 10 || x < 2) -> print_string ("'" ^ input ^ "'" ^ " is not a valid number. Please enter an integer from 2-10\n"); print_string "> "; try_game (read_line())
+  | x -> play_game x
 
-(* Not sure if the number prompted for will include the user themselves *)
 (** [main ()] prompts for the game to play, then starts it. *)
 let main () =
   ANSITerminal.(print_string [red]
@@ -254,7 +259,7 @@ let main () =
   print_string  "> ";
   match read_line () with
   | exception End_of_file -> ()
-  | number_of_players -> play_game (int_of_string number_of_players)
+  | num_players -> try_game num_players
 
 (* Execute the game engine. *)
 let () = main ()
