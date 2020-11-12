@@ -275,7 +275,7 @@ let rec straight_flush_check to_check checked =
 let royal_helper cards =
   match cards with
   | [] -> failwith "No cards."
-  | h::t -> if card_rank h = Jack
+  | h::t -> if card_rank h = Ten
     then straight_flush_helper cards
     else false
 
@@ -319,7 +319,7 @@ let get_hole_cards p =
 
 let get_best_hand p com_cards= 
   let hole = get_hole_cards p in
-  let full = hole@com_cards in
+  let full = List.sort_uniq compare hole@com_cards in
   let combos = card_combos full 5 in
   match royal_check (List.rev combos) [] with
   | x -> x
