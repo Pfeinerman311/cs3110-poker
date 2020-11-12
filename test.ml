@@ -186,30 +186,43 @@ let extended_player_names = ["Alice";"Bob";"Alice";"Bob";
 let players = create_players player_names start_stack
 let extended_players = create_players player_names start_stack
 
-let alice = {name = "Parker"; id = 2; active = true; stack = 100; 
-             hole_cards = [(Ace, Clubs); (Ace, Diamonds)]}
-let bob = {name = "Parker"; id = 2; active = true; stack = 100; 
-           hole_cards = [(King, Clubs); (King, Diamonds)]}
+let alice = {name = "Alice"; id = 1; active = true; stack = 100; 
+             hole_cards = [(Ace, Clubs); (Ace, Diamonds);]}
+let bob = {name = "Bob"; id = 2; active = true; stack = 100; 
+           hole_cards = [(Queen, Clubs); (Queen, Diamonds)]}
 
-(** 
-   let pre_end_state : State.t = 
-   { game_stage = Init;
-    players = [alice;bob;]; 
-    big_blind= alice;
-    player_to_act = bob; 
-    pot = 1000;
-    community_cards = [(Three, Clubs);(Two, Spades);(Seven, Diamonds);]; 
-    call_cost=0; 
-    deck=[]; 
-    small_blind = bob;}
-*)
+let pre_end_state = 
+  let init =  match init_state [alice;bob] with
+    | Illegal -> failwith("Illegal init should be legal")
+    | Legal t -> t
+  in 
+  let mid = match raise init bob 50 with
+    | Illegal -> failwith("Illegal Raise should be legal")
+    | Legal t -> t
+  in fold mid bob
 
+let test_state_end_subgame 
+    (name : string)
+    (pre_end_state : State.t)
+    (expected_winner : Poker.player)
+    (expected_winner_stack : int) : test = 
+  let ended_subgame = end_subgame pre_end_state in
+  let matched_ids = List.filter 
+      (fun x -> Poker.get_ID x = Poker.get_ID expected_winner) 
+      (State.get_players ended_subgame)
+  in
+  let actual_stack = Poker.get_stack (List.hd matched_ids) in
+  name >:: (fun _ ->
+      assert_equal ~printer:string_of_int
+        expected_winner_stack actual_stack) 
 
 let state_tests = [
   pot_test "simple pot increase test with a player raising" players 350;
   deal_test "check 2 players are dealt cards" players;
   deal_test "Check 8 players are dealt cards" extended_players;
   community_test "check that community has 3 cards post flop" players 3;
+  (** This test should pass but does not *)
+  test_state_end_subgame "simple test of end subgame" pre_end_state alice 150;
 ]
 
 
@@ -243,15 +256,23 @@ let community_card_test
 let main_tests = [
   community_card_test "In Init stage community cards should not be dealt" (ex_st) "";
   community_card_test "In Deal stage community cards should not be dealt" (deal ex_st) "";
+<<<<<<< HEAD
   (* The tests below are passing, but shouldn't *)
   (**
+=======
+  (* The tests below are passing, but shouldn't 
+>>>>>>> 1d5072909cc914cc8afb0010f827e5ea98d93f08
      get_community_card_test 
      "In Flop stage community cards should be dealt, aka a non-empty Poker.card list" 
      (flop ex_st) [];
      get_community_card_test 
      "In Turn stage community cards should be dealt, aka a non-empty Poker.card list" 
+<<<<<<< HEAD
      (turn ex_st) [];
   *)
+=======
+     (turn ex_st) []; *)
+>>>>>>> 1d5072909cc914cc8afb0010f827e5ea98d93f08
 ]
 
 module TestBotInfo = struct

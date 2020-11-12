@@ -51,29 +51,16 @@ let print_stage (st : State.t) : unit =
   | Turn -> print_string (label ^ "Turn\n")
   | River -> print_string (label ^ "River\n")
 
-(* [print_active_players table] takes a state [table] and prints out those
+(* [get_active_players table] takes in a state [st] and returns out those
    players which are still in the game, aka, those which have an active field
    equal to true *)
-let print_active_players table : unit =
+let get_active_players (st : State.t) : Poker.player list =
   let open Poker in
   let open State in
   let open List in
-  let active_players = 
-    table 
-    |> get_players 
-    |> filter (fun x -> is_active x = true) 
-    |> map (fun x -> get_name x)
-  in
-  print_string ("\nACTIVE PLAYERS——— " ^ (pp_list pp_string active_players))
-
-(* [print_big_blind table] prints the name of the player in state [table] who
-   is the big blind *)
-(* let print_big_blind table : unit =
-   let open Poker in
-   let open State in
-   let open List in
-   let big_blind_name = table |> get_big_blind |> get_name in
-   print_string("\nBIG BLIND———————— " ^ (pp_string big_blind_name)) *)
+  st 
+  |> get_players 
+  |> filter (fun x -> is_active x = true)
 
 (* [print_pot table] prints the amount in the pot *)
 let print_pot table : unit =
@@ -113,8 +100,7 @@ let print_hole_cards st : unit =
    current information.
    For example, information for three players, each with a stack of 150 would 
    be:
-    [ | Player 1-150 | Player 2-150 | Player 3-150 | ]
-*)
+    [ | Player 1-150 | Player 2-150 | Player 3-150 | ] *)
 let rec get_player_stacks (players : Poker.player list) (cp_name: string) (bb_name : string) : string =
   let open Poker in
   match players with
@@ -127,17 +113,16 @@ let rec get_player_stacks (players : Poker.player list) (cp_name: string) (bb_na
 
 
 (* [print_player_stacks players] returns information about the players in the 
-   game. Specifically it prints two lines, the first with name of players and 
-   their stack amounts, the second with their role in the game.
+   game. Specifically it prints a line with name of the active players and 
+   their stack amounts.
 
    For example, information for three players, each with a stack of 150, player 
    1 has the big blind, player 3 is the current player would be:
-   [ | Player1-150 (Big Blind) | Player2-150 | Player3-150 (Current Player) | ]
-*)
+   [ | Player1-150 (Big Blind) | Player2-50 | Player3-50 (Current Player) | ] *)
 let print_player_info (st : State.t) : unit =
   let open State in
   let open Poker in
-  let players = get_players st in
+  let players = get_active_players st in
   let cp_name = get_name ((current_player) st) in
   let bb_name = get_name ((get_big_blind) st) in
   print_string (get_player_stacks (players) (cp_name) (bb_name))
@@ -165,11 +150,20 @@ let transition (st : State.t) (trans : State.t -> State.t) : State.t =
   trans new_stage
 
 
-(* [play_bot_acton st] takes in a player and returns [st] *)
-let play_bot_action (st : State.t) : State.t =
+(* [play_bot_acton st] takes in the command for a bot represented by player [p]
+   and returns [st], the state after the command is performed on the game. *)
+let play_bot_action
+    (st : State.t) 
+    (p : Poker.player) 
+    (cmd : Command.command) 
+  : State.t =
   st
 
-(* TODO *)
+(* [play_bots st] plays the commands for the bots in a round where only the
+   user (aka player 1) has had their action processed. Therefore, the state
+   of the game [st] must be such that the current player is the second player.
+   This function returns a game state in which the last n - 1 players in an
+   n-player table have made a decision. *)
 let rec play_bots (st : State.t) : State.t = 
   st
 (* let open State in
@@ -260,7 +254,7 @@ let rec game_flow (st : State.t) : unit =
   let turn_st = prompt_user_command flop_st in
   let river_st = prompt_user_command turn_st in
   print_string (" Round " ^ string_of_int (get_subgame st) ^ " over, nice!\n\n");
-  let after_subgame_st = incr_subgame river_st in (* This is the state carried into next round *)
+  let after_subgame_st = incr_subgame river_st in (* This is the state carried into next subgame *)
   game_flow after_subgame_st
 
 let play_game (num_players : int) : unit =
