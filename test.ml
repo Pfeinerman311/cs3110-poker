@@ -57,7 +57,7 @@ let pot_test
     (name: string)   
     (players: player list)
     (expected: int) : test = 
-  let state = match (init_state players) with
+  let state = match (init_state players) 0 with
     | Illegal -> failwith("Illegal Raise should be legal")
     | Legal t -> t
   in
@@ -84,7 +84,7 @@ let rec players_have_2_cards players acc =
 let deal_test
     (name: string)   
     (players: player list) = 
-  let state = match (init_state players) with
+  let state = match (init_state players) 0 with
     | Illegal -> failwith("Illegal Raise should be legal")
     | Legal t -> t
   in
@@ -99,7 +99,7 @@ let community_test
     (name : string)
     (players: player list)
     (expected : int) = 
-  let state = match (init_state players) with
+  let state = match (init_state players 0) with
     | Illegal -> failwith("Illegal intial state")
     | Legal t -> t
   in
