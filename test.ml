@@ -123,30 +123,51 @@ let best_hand_test
 
 
 
-let c1 = [(Two, Spades); (Five, Clubs); (Ace, Clubs); (Seven, Diamonds);
-          (Jack, Diamonds); (Four, Spades); (Ace, Diamonds)]
-let c2 = [(Two, Spades); (Five, Diamonds)]
-let c3 = [(Three, Clubs); (Six, Clubs); (Ace, Clubs); (Seven, Diamonds);
+let c1 = [(Three, Clubs); (Ace, Clubs); (Seven, Diamonds); (Six, Clubs);
           (Four, Diamonds)]
-let c4 = [(Two, Spades); (Four, Clubs)]
-let c5 = [(Three, Spades); (Four, Clubs)]
+let c2 = [(Two, Spades); (Five, Clubs); (Ace, Clubs); (Two, Diamonds);
+          (Jack, Diamonds); (Four, Spades); (Ace, Diamonds)]
 
-let p1 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = c4}
-let p2 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = c5}
-let p3 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = c2}
+let hl_1 = [(Nine, Clubs); (King, Hearts)]
+let hl_2 = [(Two, Spades); (Four, Clubs)]
+let hl_3 = [(Three, Spades); (Four, Clubs)]
+let hl_4 = [(Seven, Hearts); (Seven, Clubs)]
+let hl_5 = [(Two, Spades); (Five, Diamonds)]
+let hl_6 = [(Jack, Clubs); (Seven, Clubs)]
+let hl_7 = [(Two, Hearts); (Ace, Hearts)]
 
+let p1 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_1}
+let p2 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_2}
+let p3 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_3}
+let p4 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_4}
+let p5 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_5}
+let p6 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_6}
+let p7 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_7}
 
-let h1 = {tp = Pair; cards = [(Four, Clubs); (Four, Diamonds)]}
-let h2 = {tp = Two_Pair; cards = [(Three, Clubs); (Three, Spades); 
+let h1 = {tp = High_Card; cards = [(King, Hearts)]}
+let h2 = {tp = Pair; cards = [(Four, Clubs); (Four, Diamonds)]}
+let h3 = {tp = Two_Pair; cards = [(Three, Clubs); (Three, Spades); 
                                   (Four, Clubs); (Four, Diamonds)]}
+let h4 = {tp = Three_Kind; cards = [(Seven, Clubs); (Seven, Diamonds); 
+                                    (Seven, Hearts)]}
 let h5 = {tp = Straight; cards = [(Two, Spades); (Three, Clubs); 
-                                  (Four, Diamonds); (Five, Diamonds); (Six, Clubs);]}
+                                  (Four, Diamonds); (Five, Diamonds); 
+                                  (Six, Clubs);]}
+let h6 = {tp = Flush; cards = [(Three, Clubs); (Six, Clubs);
+                               (Seven, Clubs); (Jack, Clubs); (Ace, Clubs)]}
+let h7 = {tp = Full_House; cards = [(Two, Diamonds); (Two, Hearts);
+                                    (Two, Spades); (Ace, Diamonds); 
+                                    (Ace, Hearts)]}
 
 let poker_tests = 
   [
-    best_hand_test "Parker pair test" p1  c3 h1;
-    best_hand_test "Parker two pair test" p2 c3 h2;
-    best_hand_test "Parker straight test" p3 c3 h5;
+    best_hand_test "Parker highcard test" p1 c1 h1; 
+    best_hand_test "Parker pair test" p2  c1 h2;
+    best_hand_test "Parker two pair test" p3 c1 h3;
+    best_hand_test "Parker three of a kind test" p4 c1 h4;
+    best_hand_test "Parker straight test" p5 c1 h5;
+    best_hand_test "Parker flush test" p6 c1 h6;
+    best_hand_test "Parker full house test" p7 c2 h7;
   ]
 
 let command_tests = 
@@ -223,12 +244,14 @@ let main_tests = [
   community_card_test "In Init stage community cards should not be dealt" (ex_st) "";
   community_card_test "In Deal stage community cards should not be dealt" (deal ex_st) "";
   (* The tests below are passing, but shouldn't *)
-  get_community_card_test 
-    "In Flop stage community cards should be dealt, aka a non-empty Poker.card list" 
-    (flop ex_st) [];
-  get_community_card_test 
-    "In Turn stage community cards should be dealt, aka a non-empty Poker.card list" 
-    (turn ex_st) [];
+  (**
+     get_community_card_test 
+     "In Flop stage community cards should be dealt, aka a non-empty Poker.card list" 
+     (flop ex_st) [];
+     get_community_card_test 
+     "In Turn stage community cards should be dealt, aka a non-empty Poker.card list" 
+     (turn ex_st) [];
+  *)
 ]
 
 module TestBotInfo = struct
