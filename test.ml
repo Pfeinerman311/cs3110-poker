@@ -161,6 +161,26 @@ let extended_player_names = ["Alice";"Bob";"Alice";"Bob";
                              "Alice";"Bob";"Alice";"Bob"]
 let players = create_players player_names start_stack
 let extended_players = create_players player_names start_stack
+
+let alice = {name = "Parker"; id = 2; active = true; stack = 100; 
+             hole_cards = [(Ace, Clubs); (Ace, Diamonds)]}
+let bob = {name = "Parker"; id = 2; active = true; stack = 100; 
+           hole_cards = [(King, Clubs); (King, Diamonds)]}
+
+(** 
+   let pre_end_state : State.t = 
+   { game_stage = Init;
+    players = [alice;bob;]; 
+    big_blind= alice;
+    player_to_act = bob; 
+    pot = 1000;
+    community_cards = [(Three, Clubs);(Two, Spades);(Seven, Diamonds);]; 
+    call_cost=0; 
+    deck=[]; 
+    small_blind = bob;}
+*)
+
+
 let state_tests = [
   pot_test "simple pot increase test with a player raising" players 350;
   deal_test "check 2 players are dealt cards" players;

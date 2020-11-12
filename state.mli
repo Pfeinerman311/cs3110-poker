@@ -48,4 +48,3 @@ val river : t -> t
 
 (** ends current round. Gives winner the pot and moves blind.*)
 val end_round : t -> t
-
