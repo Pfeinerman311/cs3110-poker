@@ -26,13 +26,13 @@ let build_table (names : string list) (stack_size : int) =
 (* [get_name] prompts the user to type a name for player [name_num] and
    returns the corresponding name *)
 let get_name (name_num : int): string =
-  print_string ("Please provide a name for Player " ^ string_of_int (name_num) ^ ": \n> ");
+  print_string ("\n Please provide a name for Player " ^ string_of_int (name_num) ^ ": \n > ");
   read_line()
 
 (* [get_names] prompts the user to input names for each player and returns
    a list of their names *)
 let get_names (num_players) : string list =
-  print_string ("You have chosen to play with " ^ string_of_int num_players ^ " player(s).\n");
+  print_string (" You have chosen to play with " ^ string_of_int num_players ^ " player(s).\n");
   let rec add_names = function
     | 0 -> []
     | num -> get_name num :: add_names (num - 1)
@@ -43,7 +43,7 @@ let get_names (num_players) : string list =
 let print_stage (st : State.t) : unit =
   let open Poker in
   let open State in
-  let label = "\nGame Stage: " in 
+  let label = "\n Game Stage: " in 
   match get_stage st with
   | Init -> print_string (label ^ "Initial\n")
   | Deal -> print_string (label ^ "Deal\n")
@@ -164,12 +164,16 @@ let transition (st : State.t) (trans : State.t -> State.t) : State.t =
   let new_stage = incr_stage st in
   trans new_stage
 
-let play_bots (st : State.t) : State.t =
-  failwith "Unimplemented"
+let rec play_bots (st : State.t) : State.t =
+  st
 
 let play_round (st : State.t) (trans : State.t -> State.t) : State.t =
   let updated_state = transition st trans in
-  updated_state
+  play_bots updated_state
+
+let finish_game (st : State.t) : State.t =
+  print_string " You've reached the end of the game.";
+  st
 
 (* [play_command st cmd] takes in a commmand [cmd] from the user and uses it to
    pattern match it to a new state which is just a transition function applied
@@ -183,49 +187,50 @@ let rec play_command (st : State.t) (cmd : Command.command) : State.t =
     | Init -> deal
     | Deal -> flop
     | Flop -> turn
-    | _ -> river
+    | Turn -> river
+    | River -> deal
   in
   match cmd with
   | Start -> play_round st to_next_stage
   | Hand -> 
     if (get_stage st = Init) 
-    then (print_string "You have not been dealt cards yet. Please pick a different option. \n"; st)
-    else (print_string "Your best hand is: ______\n"; st) (* Should show the user's best hand *)
+    then (print_string " You have not been dealt any cards yet. Please pick a different option. \n\n"; st)
+    else (print_string " Your best hand is: ______\n"; st) (* Should show the user's best hand *)
   | Hole -> 
     if (get_stage st = Init) 
-    then (print_string "You have not been dealt cards yet. Please pick a different option. \n"; st) 
+    then (print_string " You have not been dealt hole cards yet. Please pick a different option. \n\n"; st) 
     else (print_hole_cards st; st)
   | Table -> 
     if (get_stage st = Init) 
-    then (print_string "You have not been dealt cards yet. Please pick a different option. \n"; st) 
+    then (print_string " Your table has not been dealt cards yet. Please pick a different option. \n\n"; st) 
     else (print_community_cards st; print_string "\n"; st)
   | Call -> 
     if (get_stage st = Init) 
-    then (print_string "You have not been dealt cards yet. Please pick a different option. \n"; st) 
+    then (print_string " You have not been dealt any cards yet. Please pick a different option. \n\n"; st) 
     else 
       begin match call st (st |> get_players |> List.hd) with
-        | Legal new_st -> print_string "You have chosen to call.\n"; new_st
-        | Illegal -> print_string "You are unable to call.\n"; st
+        | Legal new_st -> print_string " You have chosen to call.\n\n"; new_st
+        | Illegal -> print_string " You are unable to call.\n\n"; st
       end
-  | Fold -> print_string "You have chosen to fold\n"; fold st (st |> get_players |> List.hd)
+  | Fold -> print_string " You have chosen to fold\n\n"; fold st (st |> get_players |> List.hd)
   | Raise c -> 
     if (get_stage st = Init) 
-    then (print_string "You have not been dealt cards yet. Please pick a different option. \n"; st) 
+    then (print_string " You have not been dealt cards yet. Please pick a different option. \n\n"; st) 
     else 
       begin match raise st (st |> get_players |> List.hd) c with
-        | Legal new_st -> print_string ("You have chosen to raise" ^ string_of_int c ^ ".\n"); new_st
-        | Illegal -> print_string "You are unable to raise thsi amount.\n"; st
+        | Legal new_st -> print_string (" You have chosen to raise " ^ string_of_int c ^ ".\n"); new_st
+        | Illegal -> print_string " You are unable to raise this amount.\n\n"; st
       end
-  | Quit -> print_string "\n\nThanks for playing!\n\n"; Stdlib.exit 0
+  | Quit -> print_string "\n\n Thanks for playing!\n\n"; Stdlib.exit 0
 
 
 let rec prompt_user_command (st : State.t) : State.t =
   let open Command in
-  print_string "Please input a command\n";
+  print_string " Please input a command\n";
   print_string "  ——————————————————————————————————————————————————————————\n";
   print_string " | start | hand | hole | table | call | fold | raise | quit |\n" ;
   print_string "  ——————————————————————————————————————————————————————————\n";
-  print_string ("> ");
+  print_string (" > ");
   let input = read_line() in
   match parse input with
   | exception Malformed -> print_string "This command is not appropriate, please enter one of the commands above.\n"; prompt_user_command st
@@ -236,10 +241,20 @@ let rec prompt_user_command (st : State.t) : State.t =
     end
 
 
-(* let rec game_flow (st : State.t) : State.t =
-   let open State in
-   if get_stage st = River then (print_string "Good job! Game over."; st)
-   else (prompt_user_command st; game_flow (st)) *)
+let rec game_flow (st : State.t) : unit =
+  let open State in
+  let open Poker in
+  let open Command in
+  let init_st = st in
+  let deal_st = prompt_user_command init_st in
+  let flop_st = prompt_user_command deal_st in
+  let turn_st = prompt_user_command flop_st in
+  let river_st = prompt_user_command turn_st in
+  print_string ("Round " ^ string_of_int (get_subgame st) ^ " over, nice!\n\n");
+  let after_subgame_st = incr_subgame river_st in (* This is the state carried into next round *)
+  game_flow after_subgame_st
+
+
 
 
 
@@ -249,12 +264,9 @@ let play_game (num_players : int) : unit =
   let open Command in
   let name_list = get_names num_players in
   let init_st = build_table name_list 100 in
-  let deal_st = prompt_user_command init_st in
-  let flop_st = prompt_user_command deal_st in
-  let turn_st = prompt_user_command flop_st in
-  let river_st = prompt_user_command turn_st in
-  print_string "Game over, nice!";
-  print_state river_st
+  print_state init_st;
+  game_flow init_st
+
 (* let deal_state = play_round table deal in
    print_state deal_state *)
 (* let flop_state = play_round deal_state flop in
@@ -267,16 +279,16 @@ let play_game (num_players : int) : unit =
    prompted for the number of players they would like to play with. *)
 let rec try_game (input : string) =
   match int_of_string input with
-  | exception (Failure s) -> print_string ("'" ^ input ^ "'" ^ " is not a valid number. Please enter an integer from 2-10\n"); print_string "> "; try_game (read_line())
-  | x when (x > 10 || x < 2) -> print_string ("'" ^ input ^ "'" ^ " is not a valid number. Please enter an integer from 2-10\n"); print_string "> "; try_game (read_line())
+  | exception (Failure s) -> print_string ("'" ^ input ^ "'" ^ " is not a valid number. Please enter an integer from 2-10\n"); print_string " > "; try_game (read_line())
+  | x when (x > 10 || x < 2) -> print_string ("'" ^ input ^ "'" ^ " is not a valid number. Please enter an integer from 2-10\n"); print_string " > "; try_game (read_line())
   | x -> play_game x
 
 (** [main ()] prompts for the game to play, then starts it. *)
 let main () =
   ANSITerminal.(print_string [red]
                   "\n\nWelcome to 3110 Poker.\n");
-  print_endline "Please enter the number of players you would like at your table.\n";
-  print_string  "> ";
+  print_endline " Please enter the number of players you would like at your table.\n";
+  print_string  " > ";
   match read_line () with
   | exception End_of_file -> ()
   | num_players -> try_game num_players
