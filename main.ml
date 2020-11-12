@@ -254,7 +254,7 @@ let rec game_flow (st : State.t) : unit =
   let turn_st = prompt_user_command flop_st in
   let river_st = prompt_user_command turn_st in
   print_string (" Round " ^ string_of_int (get_subgame st) ^ " over, nice!\n\n");
-  let after_subgame_st = end_subgame river_st in (* This is the state carried into next subgame *)
+  let after_subgame_st = incr_subgame river_st in (* This is the state carried into next subgame *)
   game_flow after_subgame_st
 
 let play_game (num_players : int) : unit =
