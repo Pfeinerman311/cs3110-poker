@@ -10,6 +10,8 @@ type result = Legal of t | Illegal
 (** Initalizes a game state with the players in *)
 val init_state : Poker.player list -> result
 
+val get_subgame : t -> int
+
 val get_stage : t -> stage
 
 val current_player : t -> Poker.player
@@ -25,6 +27,8 @@ val get_pot : t -> int
 val get_call_cost : t -> int
 
 val get_deck : t -> Poker.card list
+
+val incr_subgame : t -> t
 
 val incr_stage : t -> t
 

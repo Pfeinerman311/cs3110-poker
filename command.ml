@@ -27,12 +27,12 @@ let parse (str : string) : command =
   let open String in
   let cmd_lst = str |> trim |> split_on_char ' ' |> rid_spaces in
   match cmd_lst with
-  | "start" :: [] -> Start
+  | "go" :: [] -> Start
   | "hand" :: [] -> Hand
   | "hole" :: [] -> Hole
   | "table" :: [] -> Table
   | "call" :: [] -> Call
   | "fold" :: [] -> Fold
-  | "quit" :: [] -> Quit
+  | "leave" :: [] -> Quit
   | "raise" :: num :: [] -> Raise (int_of_string num)
   | _ -> raise Malformed

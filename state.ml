@@ -1,6 +1,7 @@
 type stage = Init | Deal | Flop | Turn | River
 
 type t = {
+  subgame_number: int;
   game_stage: stage;
   players: Poker.player list;
   small_blind : Poker.player;
@@ -32,7 +33,7 @@ let get_next_player player players =
 
 let init_state players = 
   if 1< List.length players && List.length players < 10 then
-    let state = {game_stage = Init; players = players; 
+    let state = {subgame_number = 0; game_stage = Init; players = players; 
                  big_blind= List.hd players;
                  player_to_act = List.hd players; pot = 0;
                  community_cards = []; call_cost=0; 
@@ -46,6 +47,9 @@ let init_state players =
     else 
       Legal {state with player_to_act=get_next_player state.small_blind players}
   else Illegal
+
+let get_subgame state =
+  state.subgame_number
 
 let get_stage state =
   state.game_stage
@@ -71,12 +75,18 @@ let get_call_cost state =
 let get_deck state =
   state.deck
 
+let incr_subgame state =
+  let current_num = state.subgame_number in
+  {state with subgame_number = current_num + 1}
+
 let incr_stage state =
   let new_stage =
     match get_stage state with
     | Init -> Deal
     | Deal -> Flop
-    | _ -> River
+    | Flop -> Turn
+    | Turn -> River
+    | River -> Deal
   in
   {state with game_stage = new_stage}
 
@@ -124,7 +134,7 @@ let rec deal_helper players deck acc =
 
 let deal state =
   let rev_player = List.rev state.players in
-  {state with players= deal_helper rev_player state.deck[] }
+  {state with players= deal_helper rev_player state.deck[]; community_cards=[] }
 
 let flop state = 
   let flop_cards, remaining_deck = first_n state.deck 3 in
