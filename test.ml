@@ -160,9 +160,9 @@ let h3 = {tp = Two_Pair; cards = [(Three, Clubs); (Three, Spades);
                                   (Four, Clubs); (Four, Diamonds)]}
 let h4 = {tp = Three_Kind; cards = [(Seven, Clubs); (Seven, Diamonds); 
                                     (Seven, Hearts)]}
-let h5 = {tp = Straight; cards = [(Two, Spades); (Three, Clubs); 
+let h5 = {tp = Straight; cards = [(Three, Clubs); 
                                   (Four, Diamonds); (Five, Diamonds); 
-                                  (Six, Clubs);]}
+                                  (Six, Clubs); (Seven, Diamonds)]}
 let h6 = {tp = Flush; cards = [(Three, Clubs); (Six, Clubs);
                                (Seven, Clubs); (Jack, Clubs); (Ace, Clubs)]}
 let h7 = {tp = Full_House; cards = [(Two, Diamonds); (Two, Hearts);

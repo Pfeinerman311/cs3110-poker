@@ -320,8 +320,8 @@ let get_hole_cards p =
 let get_best_hand p com_cards= 
   let hole = get_hole_cards p in
   let full = List.sort_uniq compare hole@com_cards in
-  let combos = card_combos full 5 in
-  match royal_check (List.rev combos) [] with
+  let combos = List.rev (card_combos full 5) in
+  match royal_check combos [] with
   | x -> x
   | exception e ->
     match four_kind_check full with
