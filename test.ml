@@ -135,6 +135,7 @@ let hl_4 = [(Seven, Hearts); (Seven, Clubs)]
 let hl_5 = [(Two, Spades); (Five, Diamonds)]
 let hl_6 = [(Jack, Clubs); (Seven, Clubs)]
 let hl_7 = [(Two, Hearts); (Ace, Hearts)]
+let hl_8 = [(Ace, Spades); (Ace, Hearts)]
 
 let p1 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_1}
 let p2 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_2}
@@ -143,6 +144,7 @@ let p4 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_4}
 let p5 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_5}
 let p6 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_6}
 let p7 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_7}
+let p8 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_8}
 
 let h1 = {tp = High_Card; cards = [(King, Hearts)]}
 let h2 = {tp = Pair; cards = [(Four, Clubs); (Four, Diamonds)]}
@@ -158,6 +160,8 @@ let h6 = {tp = Flush; cards = [(Three, Clubs); (Six, Clubs);
 let h7 = {tp = Full_House; cards = [(Two, Diamonds); (Two, Hearts);
                                     (Two, Spades); (Ace, Diamonds); 
                                     (Ace, Hearts)]}
+let h8 = {tp = Four_Kind; cards = [(Ace, Clubs); (Ace, Diamonds);
+                                   (Ace, Hearts); (Ace, Spades)]}
 
 let poker_tests = 
   [
@@ -168,6 +172,7 @@ let poker_tests =
     best_hand_test "Parker straight test" p5 c1 h5;
     best_hand_test "Parker flush test" p6 c1 h6;
     best_hand_test "Parker full house test" p7 c2 h7;
+    best_hand_test "Parker four of a kind test" p8 c2 h8;
   ]
 
 let command_tests = 
@@ -256,23 +261,13 @@ let community_card_test
 let main_tests = [
   community_card_test "In Init stage community cards should not be dealt" (ex_st) "";
   community_card_test "In Deal stage community cards should not be dealt" (deal ex_st) "";
-<<<<<<< HEAD
-  (* The tests below are passing, but shouldn't *)
-  (**
-=======
   (* The tests below are passing, but shouldn't 
->>>>>>> 1d5072909cc914cc8afb0010f827e5ea98d93f08
      get_community_card_test 
      "In Flop stage community cards should be dealt, aka a non-empty Poker.card list" 
      (flop ex_st) [];
      get_community_card_test 
      "In Turn stage community cards should be dealt, aka a non-empty Poker.card list" 
-<<<<<<< HEAD
-     (turn ex_st) [];
-  *)
-=======
      (turn ex_st) []; *)
->>>>>>> 1d5072909cc914cc8afb0010f827e5ea98d93f08
 ]
 
 module TestBotInfo = struct
