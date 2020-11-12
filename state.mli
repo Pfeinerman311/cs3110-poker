@@ -7,8 +7,9 @@ type t
 (** The type representing the result of an attempted bet *)
 type result = Legal of t | Illegal
 
-(** Initalizes a game state with the players in *)
-val init_state : Poker.player list -> result
+(** Initalizes a game state with the players. Blind is small blind big_blind is 
+    2x small blind *)
+val init_state : Poker.player list -> int -> result
 
 (** [get_subgame t] returns how many subgames have past
     Example: when the game is first initalized, [get_subgame t] returns 0
