@@ -127,6 +127,10 @@ let c1 = [(Three, Clubs); (Ace, Clubs); (Seven, Diamonds); (Six, Clubs);
           (Four, Diamonds)]
 let c2 = [(Two, Spades); (Five, Clubs); (Ace, Clubs); (Two, Diamonds);
           (Jack, Diamonds); (Four, Spades); (Ace, Diamonds)]
+let c3 = [(Three, Clubs); (Ace, Clubs); (Seven, Diamonds); (Six, Clubs);
+          (Four, Clubs)]
+let c4 = [(Three, Clubs); (Ace, Spades); (Jack, Spades); (Nine, Spades);
+          (King, Spades)]
 
 let hl_1 = [(Nine, Clubs); (King, Hearts)]
 let hl_2 = [(Two, Spades); (Four, Clubs)]
@@ -136,6 +140,8 @@ let hl_5 = [(Two, Spades); (Five, Diamonds)]
 let hl_6 = [(Jack, Clubs); (Seven, Clubs)]
 let hl_7 = [(Two, Hearts); (Ace, Hearts)]
 let hl_8 = [(Ace, Spades); (Ace, Hearts)]
+let hl_9 = [(Two, Clubs); (Five, Clubs)]
+let hl_10 = [(Queen, Spades); (Ten, Spades)]
 
 let p1 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_1}
 let p2 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_2}
@@ -145,6 +151,8 @@ let p5 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_5}
 let p6 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_6}
 let p7 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_7}
 let p8 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_8}
+let p9 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_9}
+let p10 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_10}
 
 let h1 = {tp = High_Card; cards = [(King, Hearts)]}
 let h2 = {tp = Pair; cards = [(Four, Clubs); (Four, Diamonds)]}
@@ -162,6 +170,12 @@ let h7 = {tp = Full_House; cards = [(Two, Diamonds); (Two, Hearts);
                                     (Ace, Hearts)]}
 let h8 = {tp = Four_Kind; cards = [(Ace, Clubs); (Ace, Diamonds);
                                    (Ace, Hearts); (Ace, Spades)]}
+let h9 = {tp = Straight_Flush; cards = [(Two, Clubs); (Three, Clubs); 
+                                        (Four, Clubs); (Five, Clubs); 
+                                        (Six, Clubs);]}
+let h10 = {tp = Royal_Flush; cards = [(Ten, Spades); (Jack, Spades); 
+                                      (Queen, Spades); (King, Spades); 
+                                      (Ace, Spades)]}
 
 let poker_tests = 
   [
@@ -173,6 +187,8 @@ let poker_tests =
     best_hand_test "Parker flush test" p6 c1 h6;
     best_hand_test "Parker full house test" p7 c2 h7;
     best_hand_test "Parker four of a kind test" p8 c2 h8;
+    best_hand_test "Parker straight flush test" p9 c3 h9;
+    best_hand_test "Parker royal flush test" p10 c4 h10;
   ]
 
 let command_tests = 
