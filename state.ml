@@ -160,7 +160,7 @@ let get_winners state =
   let best_hand = snd (List.hd sorted_hands) in
   List.filter (fun x -> Poker.hand_compare (snd x) best_hand = 0) sorted_hands 
 
-let end_round state =
+let end_subgame state =
   let winners,_ = List.split (get_winners state) in
   let new_players = distribute_pot winners state.players state.pot |> 
                     List.filter (fun x -> Poker.get_stack x != 0) |>

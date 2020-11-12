@@ -42,5 +42,5 @@ val turn : t -> t
 
 val river : t -> t
 
-(** ends current round. Gives winner the pot and moves blind.*)
-val end_round : t -> t
+(** ends current subgame. Gives winner(s) the pot and moves blinds.*)
+val end_subgame : t -> t
