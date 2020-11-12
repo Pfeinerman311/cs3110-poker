@@ -186,26 +186,45 @@ let rec play_command (st : State.t) (cmd : Command.command) : State.t =
     | _ -> river
   in
   match cmd with
-  | Start -> print_community_cards (to_next_stage st); play_round st to_next_stage
-  | Hand -> print_string "Your best hand is: ______\n"; st (* Should show the user's best hand *)
-  | Hole -> print_hole_cards st; st
-  | Table -> print_community_cards st; print_string "\n"; st
-  | Call -> begin match call st (st |> get_players |> List.hd) with
-      | Legal new_st -> print_string "You have chosen to call.\n"; new_st
-      | Illegal -> print_string "You are unable to call.\n"; st
-    end
+  | Start -> play_round st to_next_stage
+  | Hand -> 
+    if (get_stage st = Init) 
+    then (print_string "You have not been dealt cards yet. Please pick a different option. \n"; st)
+    else (print_string "Your best hand is: ______\n"; st) (* Should show the user's best hand *)
+  | Hole -> 
+    if (get_stage st = Init) 
+    then (print_string "You have not been dealt cards yet. Please pick a different option. \n"; st) 
+    else (print_hole_cards st; st)
+  | Table -> 
+    if (get_stage st = Init) 
+    then (print_string "You have not been dealt cards yet. Please pick a different option. \n"; st) 
+    else (print_community_cards st; print_string "\n"; st)
+  | Call -> 
+    if (get_stage st = Init) 
+    then (print_string "You have not been dealt cards yet. Please pick a different option. \n"; st) 
+    else 
+      begin match call st (st |> get_players |> List.hd) with
+        | Legal new_st -> print_string "You have chosen to call.\n"; new_st
+        | Illegal -> print_string "You are unable to call.\n"; st
+      end
   | Fold -> print_string "You have chosen to fold\n"; fold st (st |> get_players |> List.hd)
-  | Raise c -> begin match raise st (st |> get_players |> List.hd) c with
-      | Legal new_st -> print_string ("You have chosen to raise" ^ string_of_int c ^ ".\n"); new_st
-      | Illegal -> print_string "You are unable to raise thsi amount.\n"; st
-    end
+  | Raise c -> 
+    if (get_stage st = Init) 
+    then (print_string "You have not been dealt cards yet. Please pick a different option. \n"; st) 
+    else 
+      begin match raise st (st |> get_players |> List.hd) c with
+        | Legal new_st -> print_string ("You have chosen to raise" ^ string_of_int c ^ ".\n"); new_st
+        | Illegal -> print_string "You are unable to raise thsi amount.\n"; st
+      end
   | Quit -> print_string "\n\nThanks for playing!\n\n"; Stdlib.exit 0
 
 
 let rec prompt_user_command (st : State.t) : State.t =
   let open Command in
   print_string "Please input a command\n";
+  print_string "  ——————————————————————————————————————————————————————————\n";
   print_string " | start | hand | hole | table | call | fold | raise | quit |\n" ;
+  print_string "  ——————————————————————————————————————————————————————————\n";
   print_string ("> ");
   let input = read_line() in
   match parse input with
@@ -234,7 +253,8 @@ let play_game (num_players : int) : unit =
   let flop_st = prompt_user_command deal_st in
   let turn_st = prompt_user_command flop_st in
   let river_st = prompt_user_command turn_st in
-  print_string "Game over, nice!"
+  print_string "Game over, nice!";
+  print_state river_st
 (* let deal_state = play_round table deal in
    print_state deal_state *)
 (* let flop_state = play_round deal_state flop in
