@@ -50,6 +50,17 @@ let card_suit card =
   match card with
   | (h, t) -> t
 
+let first_card cards =
+  match cards with
+  | [] -> failwith "No cards"
+  | h::t -> h
+
+let rec last_card cards =
+  match cards with
+  | [] -> failwith "No cards"
+  | h::t -> if t = [] then h 
+    else last_card t
+
 let rank_to_int rank =
   match rank with
   | Two -> 2
@@ -97,7 +108,11 @@ let compare c1 c2 =
 let hand_compare h1 h2 =
   let h1_type = h1.tp |> tp_to_int in
   let h2_type = h2.tp |> tp_to_int in
-  h1_type - h2_type
+  match h1_type - h2_type with
+  | 0 -> let h1_best = last_card h1.cards in
+    let h2_best = last_card h2.cards in
+    compare h1_best h2_best
+  | x -> x
 
 let same_rank c1 c2 =
   let c1_rank = c1 |> card_rank |> rank_to_int in
@@ -132,11 +147,6 @@ let shuffle d =
     arr.(x) <- b
   done;
   Array.to_list arr
-
-let first_card cards =
-  match cards with
-  | [] -> failwith "No cards"
-  | h::t -> h
 
 let tal_compare t1 t2 =
   (rank_to_int t1.rank) -(rank_to_int t2.rank)
@@ -237,7 +247,7 @@ let full_house_helper cards tally =
     | h::t -> let r2 = h.rank in
       let f2 = (r2 |> get_rank_cards cards |> List.rev) in
       let hand = List.sort_uniq compare 
-          (get_rank_cards cards r1)@(sub_list f2 2 []) in
+          (sub_list f2 2 [])@(get_rank_cards cards r1) in
       {tp = Full_House; cards = hand}
 
 let full_house_check cards =
