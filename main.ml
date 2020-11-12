@@ -223,7 +223,7 @@ let rec play_command (st : State.t) (cmd : Command.command) : State.t =
     then (print_string " You have not been dealt cards yet. Please pick a different option. \n\n"; st) 
     else 
       begin match raise st (st |> get_players |> List.hd) c with
-        | Legal new_st -> print_string (" You have chosen to raise " ^ string_of_int c ^ ".\n"); new_st
+        | Legal new_st -> print_string (" You have chosen to raise " ^ string_of_int c ^ ".\n"); play_round new_st to_next_stage
         | Illegal -> print_string " You are unable to raise this amount.\n\n"; st
       end
   | Quit -> print_string "\n\n Thanks for playing!\n\n"; Stdlib.exit 0
