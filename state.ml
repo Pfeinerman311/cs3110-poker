@@ -78,7 +78,7 @@ let get_deck state =
 
 let incr_subgame state =
   let current_num = state.subgame_number in
-  {state with subgame_number = current_num + 1}
+  {state with subgame_number = current_num + 1; call_cost = 0;}
 
 let incr_stage state =
   let new_stage =
