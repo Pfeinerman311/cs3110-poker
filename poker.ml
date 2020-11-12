@@ -99,6 +99,11 @@ let hand_compare h1 h2 =
   let h2_type = h2.tp |> tp_to_int in
   h1_type - h2_type
 
+let same_rank c1 c2 =
+  let c1_rank = c1 |> card_rank |> rank_to_int in
+  let c2_rank = c2 |> card_rank |> rank_to_int in
+  c1_rank - c2_rank = 0
+
 let create_player name id stack =
   let p = {name= name;id=id;active=true;stack=stack;hole_cards=[]} in
   p
@@ -191,12 +196,14 @@ let three_kind_check cards =
   | h::t -> {tp = Three_Kind; cards = get_rank_cards cards h.rank}
 
 let rec straight_helper cards n =
-  match cards with
-  | [] -> if n != 5 then failwith "Must be 5 cards." 
-    else true
-  | h::t -> if compare h (first_card t) = -1 
-    then straight_helper t (n+1)
-    else false
+  if List.length cards = 1 && n = 4 then true else
+    match cards with
+    | [] -> failwith "Must be 5 cards."
+    | h::t -> let c1 = h in
+      let c2 = first_card t in
+      if same_rank c1 c2 || compare c1 c2 != -1 
+      then false
+      else straight_helper t (n+1)
 
 let rec straight_check to_check checked =
   match to_check with
@@ -206,12 +213,12 @@ let rec straight_check to_check checked =
     else straight_check t (checked@[h])
 
 let rec flush_helper cards n =
-  match cards with
-  | [] -> if n != 5 then failwith "Must be 5 cards." 
-    else true
-  | h::t -> if card_rank h = (t |> first_card |> card_rank) 
-    then flush_helper t (n+1)
-    else false
+  if List.length cards = 1 && n = 4 then true else
+    match cards with
+    | [] -> failwith "Must be 5 cards."
+    | h::t -> if card_suit h = (t |> first_card |> card_suit) 
+      then flush_helper t (n+1)
+      else false
 
 let rec flush_check to_check checked =
   match to_check with
