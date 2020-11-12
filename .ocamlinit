@@ -4,4 +4,4 @@
 #load_rec "poker.cmo";;
 #load_rec "command.cmo";;
 #load_rec "state.cmo";;
-#load_rec "foldBot.cmo";;
+#load_rec "testBot.cmo";;

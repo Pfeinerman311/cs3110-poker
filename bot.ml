@@ -1,5 +1,5 @@
 
-type difficulty = Fold | Easy | Medium | Hard
+type difficulty = Test | Easy | Medium | Hard
 
 module type BotInfo = sig
   val diff : difficulty

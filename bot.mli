@@ -1,5 +1,5 @@
 (** [difficulty] represents a bot's level of complexity and skill*)
-type difficulty = Fold | Easy | Medium | Hard
+type difficulty = Test | Easy | Medium | Hard
 
 (** A module that matches [BotInfo] is suitable for use as
     the type of Info in a [Bot]. *)

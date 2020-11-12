@@ -228,25 +228,25 @@ let main_tests = [
     (turn ex_st) [];
 ]
 
-module FoldBotInfo = struct
-  let diff = Fold
+module TestBotInfo = struct
+  let diff = Test
   let seed = 0
 end
 
-module MyFoldBot = FoldBot.Make(FoldBotInfo)
+module MyTestBot = TestBot.Make(TestBotInfo)
 let state = match (init_state players) with
   | Illegal -> failwith("Illegal Raise should be legal")
   | Legal t -> t 
 
-let test_foldbot  
+let test_testbot  
     (name: string)   
     (bot_command : command ) : test = 
   name >:: (fun _ ->
-      assert_equal bot_command Fold
+      assert_equal bot_command Call
     )
 
 let bot_tests = [
-  test_foldbot "Test fold bot folds" (MyFoldBot.get_action state)
+  test_testbot "Test fold bot folds" (MyTestBot.get_action state)
 ]
 
 let suite =
