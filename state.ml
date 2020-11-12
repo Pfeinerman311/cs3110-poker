@@ -11,6 +11,7 @@ type t = {
   community_cards: Poker.card list;
   call_cost: int;
   deck : Poker.card list;
+  blind_amount : int;
 }
 
 type result = Legal of t | Illegal
@@ -32,14 +33,15 @@ let get_next_player player players =
   helper players false
 
 
-let init_state players = 
+let init_state players blind= 
   if 1< List.length players && List.length players < 10 then
     let state = {subgame_number = 0; game_stage = Init; players = players; 
                  big_blind= List.hd players;
                  player_to_act = List.hd players; pot = 0;
                  community_cards = []; call_cost=0; 
                  deck=Poker.get_shuffled_deck (); 
-                 small_blind = (get_next_player (List.hd players) players); }
+                 small_blind = (get_next_player (List.hd players) players); 
+                 blind_amount=blind;}
     in
     if List.length players= 2 then 
       Legal {state with big_blind=state.small_blind;
@@ -135,21 +137,23 @@ let rec deal_helper players deck acc =
 
 let deal state =
   let rev_player = List.rev state.players in
-  {state with players= deal_helper rev_player state.deck[]; community_cards=[] }
+  {state with players= deal_helper rev_player state.deck[]; community_cards=[];
+              call_cost=state.blind_amount;}
 
 let flop state = 
   let flop_cards, remaining_deck = first_n state.deck 3 in
-  {state with community_cards=flop_cards; deck = remaining_deck}
+  {state with community_cards=flop_cards; deck = remaining_deck;
+              call_cost=0;}
 
 let turn state = 
   let turn_card, remaining_deck = first_n state.deck 1 in
   {state with community_cards= List.concat [turn_card;state.community_cards];
-              deck = remaining_deck;}
+              deck = remaining_deck; call_cost=0;}
 
 let river state = 
   let river_card, remaining_deck = first_n state.deck 1 in
   {state with community_cards= List.concat [river_card;state.community_cards];
-              deck = remaining_deck;}
+              deck = remaining_deck;call_cost=0;}
 
 let distribute_pot winners players pot = 
   List.map (fun x -> if List.mem x winners 

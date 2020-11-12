@@ -19,7 +19,7 @@ let pp_list pp_elt lst =
 (* [build_table] creates a list of players with a given stack size (100) for
    simplicity *)
 let build_table (names : string list) (stack_size : int) =
-  match State.init_state (Poker.create_players names 100) with
+  match State.init_state (Poker.create_players names 100) 0 with
   | Legal t -> t
   | Illegal -> failwith "unable to initialize table"
 

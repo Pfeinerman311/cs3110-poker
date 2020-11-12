@@ -171,7 +171,7 @@ let bob = {name = "Bob"; id = 2; active = true; stack = 100;
            hole_cards = [(Queen, Clubs); (Queen, Diamonds)]}
 
 let pre_end_state = 
-  let init =  match init_state [alice;bob] with
+  let init =  match init_state [alice;bob] 0 with
     | Illegal -> failwith("Illegal init should be legal")
     | Legal t -> t
   in 
@@ -211,7 +211,7 @@ let ex_st =
   let player_names = ["Cesar"; "Dean"; "Parker"] in
   let start_stack = 100 in
   let players = create_players player_names start_stack in
-  match init_state players with
+  match init_state players 0 with
   | Legal st -> st
   | Illegal -> failwith "Illegal"
 
@@ -250,7 +250,7 @@ module TestBotInfo = struct
 end
 
 module MyTestBot = TestBot.Make(TestBotInfo)
-let state = match (init_state players) with
+let state = match (init_state players 0) with
   | Illegal -> failwith("Illegal Raise should be legal")
   | Legal t -> t 
 
