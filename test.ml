@@ -133,6 +133,8 @@ let c5 = [(Three, Spades); (Four, Clubs)]
 
 let p1 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = c4}
 let p2 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = c5}
+let p3 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = c2}
+
 
 let h1 = {tp = Pair; cards = [(Four, Clubs); (Four, Diamonds)]}
 let h2 = {tp = Two_Pair; cards = [(Three, Clubs); (Three, Spades); 
@@ -143,7 +145,8 @@ let h5 = {tp = Straight; cards = [(Two, Spades); (Three, Clubs);
 let poker_tests = 
   [
     best_hand_test "Parker pair test" p1  c3 h1;
-    best_hand_test "Parker two pair test" p2 c3 h2
+    best_hand_test "Parker two pair test" p2 c3 h2;
+    best_hand_test "Parker straight test" p3 c3 h5;
   ]
 
 let command_tests = 
