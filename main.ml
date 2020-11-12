@@ -164,12 +164,23 @@ let transition (st : State.t) (trans : State.t -> State.t) : State.t =
   let new_stage = incr_stage st in
   trans new_stage
 
-let rec play_bots (st : State.t) : State.t =
+
+(* [play_bot_acton st] takes in a player and returns [st] *)
+let play_bot_action (st : State.t) : State.t =
   st
 
+(* TODO *)
+let rec play_bots (st : State.t) : State.t = 
+  st
+(* let open State in
+   let bots = st |> get_players |> List.tl in
+   play_bot_action (List.hd bots) *)
+
 let play_round (st : State.t) (trans : State.t -> State.t) : State.t =
-  let updated_state = transition st trans in
-  play_bots updated_state
+  let open State in
+  let after_trans = transition st trans in
+  (* let after_bots =  play_bots st in *)
+  after_trans
 
 let finish_game (st : State.t) : State.t =
   print_string " You've reached the end of the game.";
@@ -223,23 +234,21 @@ let rec play_command (st : State.t) (cmd : Command.command) : State.t =
       end
   | Quit -> print_string "\n\n Thanks for playing!\n\n"; Stdlib.exit 0
 
-
 let rec prompt_user_command (st : State.t) : State.t =
   let open Command in
   print_string " Please input a command\n";
-  print_string "  ——————————————————————————————————————————————————————————\n";
-  print_string " | start | hand | hole | table | call | fold | raise | quit |\n" ;
-  print_string "  ——————————————————————————————————————————————————————————\n";
+  print_string "  ————————————————————————————————————————————————————————\n";
+  print_string " | go | hand | hole | table | call | fold | raise | leave |\n" ;
+  print_string "  ————————————————————————————————————————————————————————\n";
   print_string (" > ");
   let input = read_line() in
   match parse input with
-  | exception Malformed -> print_string "This command is not appropriate, please enter one of the commands above.\n"; prompt_user_command st
+  | exception Malformed -> print_string "\n This command is not appropriate, please enter one of the commands above.\n"; prompt_user_command st
   | cmd -> 
     begin match play_command st cmd with
       | same_st when same_st = st -> prompt_user_command same_st
       | new_st -> print_state new_st; new_st
     end
-
 
 let rec game_flow (st : State.t) : unit =
   let open State in
@@ -250,13 +259,9 @@ let rec game_flow (st : State.t) : unit =
   let flop_st = prompt_user_command deal_st in
   let turn_st = prompt_user_command flop_st in
   let river_st = prompt_user_command turn_st in
-  print_string ("Round " ^ string_of_int (get_subgame st) ^ " over, nice!\n\n");
+  print_string (" Round " ^ string_of_int (get_subgame st) ^ " over, nice!\n\n");
   let after_subgame_st = incr_subgame river_st in (* This is the state carried into next round *)
   game_flow after_subgame_st
-
-
-
-
 
 let play_game (num_players : int) : unit =
   let open Poker in
@@ -266,14 +271,6 @@ let play_game (num_players : int) : unit =
   let init_st = build_table name_list 100 in
   print_state init_st;
   game_flow init_st
-
-(* let deal_state = play_round table deal in
-   print_state deal_state *)
-(* let flop_state = play_round deal_state flop in
-   print_state flop_state;
-   let river_state = play_round flop_state river in
-   print_state river_state *)
-
 
 (* [try_game input] is simply a way of constraining the user's input when 
    prompted for the number of players they would like to play with. *)
