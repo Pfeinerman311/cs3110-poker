@@ -26,7 +26,8 @@ let get_next_player player players =
     match lst with
     | [] -> if next then player else failwith "player not in players"
     | h::t -> if next then h else 
-      if h = player then helper t true else helper t false 
+      if Poker.get_ID h = Poker.get_ID player then helper t true 
+      else helper t false 
   in
   helper players false
 
@@ -164,7 +165,8 @@ let get_winners state =
   in
   let best_hands = List.map player_to_tup state.players in
   let sorted_hands = 
-    List.sort (fun x y -> Poker.hand_compare (snd y) (snd x)) best_hands 
+    List.sort (fun x y -> Poker.hand_compare (snd x) (snd y)) best_hands |>
+    List.rev
   in
 
   let best_hand = snd (List.hd sorted_hands) in
