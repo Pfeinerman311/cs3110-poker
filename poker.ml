@@ -320,8 +320,8 @@ let get_hole_cards p =
 let get_best_hand p com_cards= 
   let hole = get_hole_cards p in
   let full = List.sort_uniq compare hole@com_cards in
-  let combos = card_combos full 5 in
-  match royal_check (List.rev combos) [] with
+  let combos = List.rev (card_combos full 5) in
+  match royal_check combos [] with
   | x -> x
   | exception e ->
     match four_kind_check full with
@@ -376,6 +376,19 @@ let suit_to_string suit =
   | Hearts -> "Hearts"
   | Spades -> "Spades"
 
+let tp_to_string tp =
+  match tp with
+  | High_Card -> "High Card"
+  | Pair -> "Pair"
+  | Two_Pair -> "Two Pair"
+  | Three_Kind -> "Three of a Kind"
+  | Straight -> "Straight"
+  | Flush -> "Flush"
+  | Full_House -> "Full House"
+  | Four_Kind -> "Four of a Kind"
+  | Straight_Flush -> "Straight Flush"
+  | Royal_Flush -> "Royal Flush"
+
 let card_to_string card =
   let rank = card |> card_rank |> rank_to_string in
   let suit = card |> card_suit |> suit_to_string in
@@ -394,36 +407,6 @@ let rec combos_to_string_list cards_list =
   | [] -> []
   | h::t -> [card_list_to_string h]@(combos_to_string_list t)
 
-let tp_to_string tp =
-  match tp with
-  | High_Card -> "High Card"
-  | Pair -> "Pair"
-  | Two_Pair -> "Two Pair"
-  | Three_Kind -> "Three of a Kind"
-  | Straight -> "Straight"
-  | Flush -> "Flush"
-  | Full_House -> "Full House"
-  | Four_Kind -> "Four of a Kind"
-  | Straight_Flush -> "Straight Flush"
-  | Royal_Flush -> "Royal Flush"
-
-
 let hand_to_string hand =
   String.concat " of " 
     [tp_to_string hand.tp; card_list_to_string hand.cards]
-
-(** 
-   let rec flush_check cards n =
-   match cards with
-   | [] -> if n != 5 then failwith "Must be 5 cards." 
-   else true
-   | h::t -> if card_rank h = (t |> first_card |> card_rank) 
-   then flush_check t (n+1)
-   else false
-*)
-(**
-   let rec royal_helper cards =
-   match cards with
-   | [] -> {tp = Royal_Flush; cards = cards}
-   | h::t -> XXX
-*)
