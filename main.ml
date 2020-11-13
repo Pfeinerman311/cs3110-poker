@@ -198,9 +198,9 @@ let rec play_command (st : State.t) (cmd : Command.command) : State.t =
   match cmd with
   | Start -> play_round st to_next_stage
   | Hand -> 
-    if (get_stage st = Init) 
+    if (get_stage st = Init || get_stage st = Deal) 
     then (print_string " You have not been dealt any cards yet. Please pick a different option. \n\n"; st)
-    else (print_string " Your best hand is: ______\n"; st) (* Should show the user's best hand *)
+    else (print_string (" Your best hand is: " ^ hand_to_string (get_best_hand (st |> get_players |> List.hd) (get_community_cards st)) ^ "\n\n"); st) (* Should show the user's best hand *)
   | Hole -> 
     if (get_stage st = Init) 
     then (print_string " You have not been dealt hole cards yet. Please pick a different option. \n\n"; st) 
@@ -254,7 +254,7 @@ let rec game_flow (st : State.t) : unit =
   let turn_st = prompt_user_command flop_st in
   let river_st = prompt_user_command turn_st in
   print_string (" Round " ^ string_of_int (get_subgame st) ^ " over, nice!\n\n");
-  let after_subgame_st = incr_subgame river_st in (* This is the state carried into next subgame *)
+  let after_subgame_st = end_subgame river_st in (* This is the state carried into next subgame *)
   game_flow after_subgame_st
 
 let play_game (num_players : int) : unit =
