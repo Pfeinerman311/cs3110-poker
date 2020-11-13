@@ -101,7 +101,8 @@ let raise state player amount =
       else x) state.players in 
     Legal {state with players =  new_players; 
                       pot = state.pot + state.call_cost + amount;
-                      call_cost = state.call_cost + amount}
+                      call_cost = state.call_cost + amount;
+                      player_to_act=(get_next_player player new_players);}
 
 let call state player = 
   if state.call_cost > Poker.get_stack player then Illegal
@@ -109,13 +110,15 @@ let call state player =
       if Poker.get_ID x = Poker.get_ID player then 
         Poker.alter_stack x (-state.call_cost)
       else x) state.players in 
-    Legal {state with players =  new_players; pot = state.pot + state.call_cost}
+    Legal {state with players =  new_players; pot = state.pot + state.call_cost;
+                      player_to_act=(get_next_player player new_players);}
 
 let fold state player = 
   let new_players = List.map (fun x -> 
       if Poker.get_ID x = Poker.get_ID player then Poker.set_inactive x
       else x) state.players in
-  {state with players = new_players}
+  {state with players = new_players; 
+              player_to_act=(get_next_player player new_players);}
 
 let rec first_n_helper list num stop acc = 
   match list with
@@ -132,7 +135,8 @@ let rec deal_helper players deck acc =
   | [] -> acc
   | h::t -> 
     let hole_cards , remaining_deck = first_n deck 2 in
-    let new_player = Poker.set_hole_cards h hole_cards in
+    let sorted_hole_cards = List.sort Poker.compare hole_cards in
+    let new_player = Poker.set_hole_cards h sorted_hole_cards in
     deal_helper t (List.tl remaining_deck) (new_player::acc)
 
 let deal state =
