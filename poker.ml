@@ -138,15 +138,24 @@ let rec deck_builder ranks deck =
   | h::t -> deck_builder t deck@[(h, Clubs); (h, Diamonds); 
                                  (h, Hearts); (h, Spades)]
 
-let shuffle d = 
-  let arr = Array.of_list d in
-  for x = (Array.length arr - 1) downto 1 do
+(**
+   let shuffle d = 
+   Random.self_init ();
+   let arr = Array.of_list d in
+   for x = (Array.length arr - 1) downto 1 do
     let a = Random.int (x + 1) in
     let b = arr.(a) in
     arr.(a) <- arr.(x);
     arr.(x) <- b
-  done;
-  Array.to_list arr
+   done;
+   Array.to_list arr
+*)
+
+let shuffle deck =
+  Random.self_init ();
+  let nd = List.map (fun x -> (Random.bits (), x)) deck in
+  let sond = List.sort Stdlib.compare nd in
+  List.map snd sond
 
 let tal_compare t1 t2 =
   (rank_to_int t1.rank) -(rank_to_int t2.rank)
