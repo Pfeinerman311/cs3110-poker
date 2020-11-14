@@ -296,7 +296,7 @@ let rec game_flow (st : State.t) : unit =
   let flop_st = prompt_user_command deal_st in
   let turn_st = prompt_user_command flop_st in
   let river_st = prompt_user_command turn_st in
-  ANSITerminal.(print_string [blue;Bold] (" _____ " ^ string_of_int (get_subgame st) ^ " takes the pot \n\n"));
+  ANSITerminal.(print_string [blue;Bold] (" _____ " ^ " takes the pot \n\n"));
   let after_subgame_st = incr_subgame (end_subgame river_st) in (* This is the state carried into next subgame *)
   game_flow after_subgame_st
 
