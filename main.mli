@@ -1,7 +1,7 @@
 (* The abstraction for the main.ml file, which controls the interface of the
    poker game. *)
 
-val print_community_cards : State.t -> unit
+val print_community_cards : State.t -> bool -> unit
 
 (* [get_command str] parses a user's input into a Command.command which is then
    processed into a state transition or some response from the interface. *)
