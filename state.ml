@@ -63,6 +63,9 @@ let current_player state =
 let get_players state = 
   state.players
 
+let get_active_players state = 
+  List.filter Poker.is_active (get_players state)
+
 let get_big_blind state =
   state.big_blind
 

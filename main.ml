@@ -176,36 +176,43 @@ let transition (st : State.t) (trans : State.t -> State.t) : State.t =
   let new_stage = incr_stage st in
   trans new_stage
 
-
 (* [play_bot_acton st] takes in the command for a bot represented by player [p]
    and returns [st], the state after the command is performed on the game. *)
 let play_bot_action
     (st : State.t) 
-    (p : Poker.player) 
-    (cmd : Command.command) 
+    (p : Poker.player)
   : State.t =
-  match cmd with
+  match MyTestBot.get_action st with
   | _ ->
     begin match State.call st p with
       | Legal new_st -> ANSITerminal.(print_string [green] ("\n\n " ^ (Poker.get_name p) ^ " has chosen to call\n")) ; new_st
       | Illegal -> failwith "Bot cannot call"
     end
 
-
-
-
 (* [play_bots st] plays the commands for the bots in a round where only the
-   user (aka player 1) has had their action processed. Therefore, the state
-   of the game [st] must be such that the current player is the second player.
-   This function returns a game state in which the last n - 1 players in an
-   n-player table have made a decision. *)
+   user (aka player 1) has had their action processed. 
+
+   The idea here is to use fold_left on the list of players besides the user.
+   As such, when replaced with the types being used here, the type of fold_left
+   would be:
+    (state -> player -> state) -> player list -> state
+
+   Therefore, the state of the game [st] must be such that the current player is 
+   the second player. This function returns a game state in which the last n - 1 
+   players in an n-player table have made a decision.
+*)
 let rec play_bots (st : State.t) : State.t =
   let open State in
-  let open Poker in
-  let current_player = st |> current_player in
-  if current_player = (st |> get_players |> List.hd) then st 
-  else
-    play_bot_action st current_player (MyTestBot.get_action st)
+  let open List in
+  st
+  |> get_players
+  |> tl
+  |> fold_left play_bot_action st
+
+(* let current_player = st |> current_player in
+   if current_player = (st |> get_players |> List.hd) then st 
+   else
+   play_bot_action st current_player (MyTestBot.get_action st) *)
 
 
 (* for i = 2 to List.length (get_players st) do
@@ -215,13 +222,14 @@ let rec play_bots (st : State.t) : State.t =
 
 let play_round (st : State.t) (trans : State.t -> State.t) : State.t =
   let open State in
-  (* let after_bots = play_bots st in *)
-  let after_trans = transition st trans in
+  let after_bots = if (State.get_stage st = Init) then st else play_bots st in
+  let after_trans = transition after_bots trans in
   after_trans
 
-let finish_game (st : State.t) : State.t =
-  print_string " You've reached the end of the game.";
-  st
+let finish_game (st : State.t) : unit =
+  let last_man_standing = st |> get_active_players |> List.hd |> Poker.get_name in
+  print_state st;
+  ANSITerminal.(print_string [green] (" Congratulations " ^ last_man_standing ^ "! \n\n You've reached the end of the game. \n\n"))
 
 (* [play_command st cmd] takes in a commmand [cmd] from the user and uses it to
    pattern match it to a new state which is just a transition function applied
@@ -238,12 +246,13 @@ let rec play_command (st : State.t) (cmd : Command.command) : State.t =
     | Turn -> river
     | River -> deal
   in
+  let user = st |> get_players |> List.hd in
   match cmd with
-  | Start -> play_round (play_bots st) to_next_stage
+  | Start -> play_round st to_next_stage
   | Hand -> 
     if (get_stage st = Init || get_stage st = Deal) 
     then (ANSITerminal.(print_string [red] "\n You have not been dealt any cards yet. Please pick a different option. \n\n"); st)
-    else (ANSITerminal.(print_string [green] ("\n Your best hand is: " ^ hand_to_string (get_best_hand (st |> get_players |> List.hd) (get_community_cards st)) ^ "\n\n")); st) (* Should show the user's best hand *)
+    else (ANSITerminal.(print_string [green] ("\n Your best hand is: " ^ hand_to_string (get_best_hand user (get_community_cards st)) ^ "\n\n")); st)
   | Hole -> 
     if (get_stage st = Init) 
     then (ANSITerminal.(print_string [red] "\n You have not been dealt any cards yet. Please pick a different option. \n\n"); st) 
@@ -255,17 +264,17 @@ let rec play_command (st : State.t) (cmd : Command.command) : State.t =
   | Call -> 
     if (get_stage st = Init) 
     then (ANSITerminal.(print_string [red] "\n You have not been dealt any cards yet. Please pick a different option. \n\n"); st) 
-    else 
-      begin match call st (st |> get_players |> List.hd) with
-        | Legal new_st -> ANSITerminal.(print_string [green] "\n You have chosen to call.\n\n"); new_st
+    else
+      begin match call st user with
+        | Legal new_st -> ANSITerminal.(print_string [green] "\n You have chosen to call.\n\n"); play_round new_st to_next_stage
         | Illegal -> ANSITerminal.(print_string [red] " \nYou are unable to call.\n\n"); st
       end
-  | Fold -> print_string " You have chosen to fold\n\n"; fold st (st |> get_players |> List.hd)
+  | Fold -> print_string " You have chosen to fold\n\n"; play_round (fold st user) to_next_stage
   | Raise c -> 
     if (get_stage st = Init) 
     then (ANSITerminal.(print_string [red] " \nYou have not been dealt any cards yet. Please pick a different option. \n\n"); st) 
     else 
-      begin match raise st (st |> get_players |> List.hd) c with
+      begin match raise st user c with
         | Legal new_st -> print_string (" You have chosen to raise " ^ string_of_int c ^ ".\n"); play_round new_st to_next_stage
         | Illegal -> ANSITerminal.(print_string [red] " \nYou are unable to raise this amount.\n\n"); st
       end
@@ -280,7 +289,7 @@ let rec prompt_user_command (st : State.t) : State.t =
   print_string (" > ");
   let input = read_line() in
   match parse input with
-  | exception Malformed -> print_string "\n This command is not appropriate, please enter one of the commands above.\n"; prompt_user_command st
+  | exception Malformed -> ANSITerminal.(print_string [red] "\n This command is not appropriate, please enter one of the commands above.\n"); prompt_user_command st
   | cmd -> 
     begin match play_command st cmd with
       | same_st when same_st = st -> prompt_user_command same_st
@@ -297,8 +306,10 @@ let rec game_flow (st : State.t) : unit =
   let turn_st = prompt_user_command flop_st in
   let river_st = prompt_user_command turn_st in
   ANSITerminal.(print_string [blue;Bold] (" _____ " ^ " takes the pot \n\n"));
-  let after_subgame_st = incr_subgame (end_subgame river_st) in (* This is the state carried into next subgame *)
-  game_flow after_subgame_st
+  let after_subgame_st = incr_subgame (end_subgame river_st) in
+  if List.length (get_active_players after_subgame_st) < 2 
+  then finish_game after_subgame_st 
+  else game_flow after_subgame_st
 
 let play_game (num_players : int) : unit =
   let open Poker in

@@ -25,6 +25,9 @@ val current_player : t -> Poker.player
 (** [get_players t] returns a list of players in the game*)
 val get_players : t -> Poker.player list
 
+(** [get_active_players t] returns a list of ACTIVE players in the game*)
+val get_active_players : t -> Poker.player list
+
 (** [get_big_blind t] returns the player who currently has the big blind *)
 val get_big_blind : t -> Poker.player
 
