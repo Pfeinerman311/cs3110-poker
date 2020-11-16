@@ -101,7 +101,7 @@ let print_community_cards (st : State.t) (color_print : bool) : unit =
     |> get_community_cards
     |> card_list_to_string in
   if color_print then
-    ANSITerminal.(print_string [blue] ("The cards on the table are: " ^ community_cards))
+    ANSITerminal.(print_string [blue] ("\n The cards on the table are: " ^ community_cards))
   else
     print_string (" | Community cards: " ^ community_cards ^ "\n")
 
