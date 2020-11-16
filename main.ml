@@ -311,7 +311,7 @@ let rec print_winners (winners : (Poker.player * Poker.hand) list) : unit =
     let name = get_name player in
     let hole = card_list_to_string (get_hole_cards player) in
     let hand = hand_to_string hand in
-    ANSITerminal.(print_string [Bold; blue] ("\n - " ^ name ^ " with " ^ hand ^ " " ^ hole ^ " \n")); print_winners t
+    ANSITerminal.(print_string [Bold; blue] ("\n - " ^ name ^ " with hand: " ^hand ^ "\n   and hole: " ^ hole ^ " \n")); print_winners t
 
 let rec game_flow (st : State.t) : unit =
   let open State in
