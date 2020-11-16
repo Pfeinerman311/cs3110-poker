@@ -84,6 +84,8 @@ val turn : t -> t
     removed from the deck*)
 val river : t -> t
 
+val get_winners : t -> (Poker.player * Poker.hand) list
+
 (** [end_subgame t} ends current subgame. 
     the returned state gives winner(s) the pot and moves blinds. 
     it also gets a newly shuffled deck and resets the pot and call costs*)
