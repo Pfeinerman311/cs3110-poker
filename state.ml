@@ -16,7 +16,6 @@ type t = {
 
 type result = Legal of t | Illegal
 
-
 (** returns the player after [player] in circular-list [players]
     requires: [player] in [players]
     Examples:
@@ -31,7 +30,6 @@ let get_next_player player players =
       else helper t false 
   in
   helper players false
-
 
 let init_state players blind= 
   if 1< List.length players && List.length players < 10 then
@@ -77,6 +75,18 @@ let get_pot state =
 
 let get_call_cost state = 
   state.call_cost
+
+let pay_big_blind state =
+  let big_blind = get_big_blind state in
+  let updated_player_list = 
+    List.map 
+      (fun player -> 
+         if player = big_blind 
+         then (Poker.alter_stack player state.blind_amount) 
+         else player) 
+      state.players
+  in
+  {state with players = updated_player_list}
 
 let get_deck state =
   state.deck

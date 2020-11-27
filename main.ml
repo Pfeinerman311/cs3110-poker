@@ -118,7 +118,7 @@ let print_hole_cards (st : State.t) (color_print : bool) : unit =
     |> get_hole_cards
     |> card_list_to_string in
   if color_print then
-    ANSITerminal.(print_string [blue] ("Your hole cards are: " ^ hole_cards))
+    ANSITerminal.(print_string [blue] ("Your hole cards are: " ^ hole_cards ^ "\n\n"))
   else
     print_string (" | Cards: " ^ hole_cards ^ "\n\n")
 
@@ -209,23 +209,15 @@ let rec play_bots (st : State.t) : State.t =
   |> tl
   |> fold_left play_bot_action st
 
-(* let current_player = st |> current_player in
-   if current_player = (st |> get_players |> List.hd) then st 
-   else
-   play_bot_action st current_player (MyTestBot.get_action st) *)
-
-
-(* for i = 2 to List.length (get_players st) do
-   ANSITerminal.(print_string [green] ("\n | Player " ^ string_of_int i ^ " has played"));
-   print_string "...\n";
-   done; *)
-
 let play_round (st : State.t) (trans : State.t -> State.t) : State.t =
   let open State in
   let after_bots = if (State.get_stage st = Init) then st else play_bots st in
   let after_trans = transition after_bots trans in
   after_trans
 
+(* [finish_game st] is a function that prints the necessary things once a game
+   in state [st] is recognized to be over (aka there is only player with money
+   left). *)
 let finish_game (st : State.t) : unit =
   let last_man_standing = st |> get_active_players |> List.hd |> Poker.get_name in
   print_state st;
@@ -296,12 +288,6 @@ let rec prompt_user_command (st : State.t) : State.t =
       | new_st -> print_state new_st; new_st
     end
 
-(* let rec print_winner (winners : (Poker.player * Poker.hand) list) : unit = 
-   match winners with
-   | [] -> ()
-   | (player, hand) :: t ->  *)
-
-
 let rec print_winners (winners : (Poker.player * Poker.hand) list) : unit =
   let open State in
   let open Poker in
@@ -318,7 +304,7 @@ let rec game_flow (st : State.t) : unit =
   let open Poker in
   let open Command in
   let init_st = st in
-  let deal_st = prompt_user_command init_st in
+  let deal_st = prompt_user_command (pay_big_blind init_st) in
   let flop_st = prompt_user_command deal_st in
   let turn_st = prompt_user_command flop_st in
   let river_st = prompt_user_command turn_st in
