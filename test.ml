@@ -247,7 +247,6 @@ let state_tests = [
   test_state_end_subgame "simple test of end subgame" pre_end_state alice 150;
 ]
 
-
 let ex_st =
   let open State in
   let open Poker in
