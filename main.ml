@@ -57,12 +57,13 @@ let get_names (num_players) : string list =
   username :: List.rev (add_names num_players)
 
 let name_list_generic (num_players : int) : string list =
+  let open List in
   let username = print_string(" What's your name?\n\n > "); read_line() in
-  let rec add_names = function
+  let rec add_names lst = function
     | 1 -> []
-    | num -> List.nth table_names (num - 1) :: add_names (num - 1)
+    | num -> hd lst :: add_names (tl lst) (num - 1)
   in
-  username :: List.rev (add_names num_players)
+  username :: List.rev (add_names table_names num_players)
 
 
 (* [print_stage st] prints the stage in which the state of the game [st] is *)
@@ -334,15 +335,15 @@ let play_game (num_players : int) : unit =
    prompted for the number of players they would like to play with. *)
 let rec try_game (input : string) =
   match int_of_string input with
-  | exception (Failure s) -> print_string ("'" ^ input ^ "'" ^ " is not a valid number. Please enter an integer from 2-10\n"); print_string " > "; try_game (read_line())
-  | x when (x > 9 || x < 1) -> print_string ("'" ^ input ^ "'" ^ " is not a valid number. Please enter an integer from 2-10\n"); print_string " > "; try_game (read_line())
+  | exception (Failure s) -> print_string ("'" ^ input ^ "'" ^ " is not a valid number. Please enter an integer from 2-9\n"); print_string " > "; try_game (read_line())
+  | x when (x > 9 || x < 2) -> print_string ("'" ^ input ^ "'" ^ " is not a valid number. Please enter an integer from 2-9\n"); print_string " > "; try_game (read_line())
   | x -> play_game x
 
 (** [main ()] prompts for the game to play, then starts it. *)
 let main () =
   ANSITerminal.(print_string [green]
                   "\n\n Welcome to 3110 Poker.\n");
-  print_endline " Please enter a number of players [2 - 9] that you would like to play with.\n";
+  print_endline " Please enter a number of players [2 - 9] that you would like at your table.\n";
   print_string  " > ";
   match read_line () with
   | exception End_of_file -> ()
