@@ -1,5 +1,19 @@
 open Bot
 
+
+(* This is a list of predetermined names for input into build_table *)
+let table_names = 
+  ["Cesar"; 
+   "Dean"; 
+   "Parker"; 
+   "Clarkson";
+   "Gries";
+   "White";
+   "Fan";
+   "Foster";
+   "Hopcroft"
+  ]
+
 let player_names = ["Cesar"; "Dean"; "Parker"]
 let start_stack = 100
 let players = Poker.create_players player_names start_stack 
@@ -26,7 +40,8 @@ let build_table (names : string list) (stack_size : int) =
 (* [get_name] prompts the user to type a name for player [name_num] and
    returns the corresponding name *)
 let get_name (name_num : int): string =
-  ANSITerminal.(print_string [green] ("\n Please provide a name for Player " ^ string_of_int (name_num) ^ ": \n"));
+  let player_num = string_of_int name_num in
+  ANSITerminal.(print_string [green] ("\n Please provide a name for Player " ^ player_num ^ ": \n"));
   print_string " > ";
   read_line()
 
@@ -40,6 +55,15 @@ let get_names (num_players) : string list =
     | num -> get_name num :: add_names (num - 1)
   in
   username :: List.rev (add_names num_players)
+
+let name_list_generic (num_players : int) : string list =
+  let username = print_string(" What's your name?\n\n > "); read_line() in
+  let rec add_names = function
+    | 1 -> []
+    | num -> List.nth table_names (num - 1) :: add_names (num - 1)
+  in
+  username :: List.rev (add_names num_players)
+
 
 (* [print_stage st] prints the stage in which the state of the game [st] is *)
 let print_stage (st : State.t) : unit =
@@ -226,14 +250,14 @@ let rec play_command (st : State.t) (cmd : Command.command) : State.t =
     if (get_stage st = Init || get_stage st = Deal) 
     then (ANSITerminal.(print_string [red] "\n You have not been dealt any cards yet. Please pick a different option. \n\n"); st)
     else (ANSITerminal.(print_string [green] ("\n Your best hand is: " ^ hand_to_string (get_best_hand user (get_community_cards st)) ^ "\n\n")); st)
-  | Hole -> 
-    if (get_stage st = Init) 
-    then (ANSITerminal.(print_string [red] "\n You have not been dealt any cards yet. Please pick a different option. \n\n"); st) 
-    else (print_hole_cards st true; st)
-  | Table -> 
-    if (get_stage st = Init) 
-    then (ANSITerminal.(print_string [red] "\n You have not been dealt any cards yet. Please pick a different option. \n\n"); st) 
-    else (print_community_cards st true; print_string "\n"; st)
+  (* | Hole -> 
+     if (get_stage st = Init) 
+     then (ANSITerminal.(print_string [red] "\n You have not been dealt any cards yet. Please pick a different option. \n\n"); st) 
+     else (print_hole_cards st true; st)
+     | Table -> 
+     if (get_stage st = Init) 
+     then (ANSITerminal.(print_string [red] "\n You have not been dealt any cards yet. Please pick a different option. \n\n"); st) 
+     else (print_community_cards st true; print_string "\n"; st) *)
   | Call -> 
     if (get_stage st = Init) 
     then (ANSITerminal.(print_string [red] "\n You have not been dealt any cards yet. Please pick a different option. \n\n"); st) 
@@ -256,9 +280,9 @@ let rec play_command (st : State.t) (cmd : Command.command) : State.t =
 let rec prompt_user_command (st : State.t) : State.t =
   let open Command in
   ANSITerminal.(print_string [green] " It's your turn. Please input a command from below: \n");
-  print_string "  ————————————————————————————————————————————————————————\n";
-  print_string " | go | hand | hole | table | call | fold | raise | leave |\n" ;
-  print_string "  ————————————————————————————————————————————————————————\n";
+  print_string "  —————————————————————————————————————————\n";
+  print_string " | go | hand | call | fold | raise | leave |\n" ;
+  print_string "  —————————————————————————————————————————\n";
   print_string (" > ");
   let input = read_line() in
   match parse input with
@@ -301,7 +325,7 @@ let play_game (num_players : int) : unit =
   let open Poker in
   let open State in
   let open Command in
-  let name_list = get_names num_players in
+  let name_list = name_list_generic num_players in
   let init_st = build_table name_list 100 in
   print_state init_st;
   game_flow init_st
@@ -311,14 +335,14 @@ let play_game (num_players : int) : unit =
 let rec try_game (input : string) =
   match int_of_string input with
   | exception (Failure s) -> print_string ("'" ^ input ^ "'" ^ " is not a valid number. Please enter an integer from 2-10\n"); print_string " > "; try_game (read_line())
-  | x when (x > 10 || x < 2) -> print_string ("'" ^ input ^ "'" ^ " is not a valid number. Please enter an integer from 2-10\n"); print_string " > "; try_game (read_line())
+  | x when (x > 9 || x < 1) -> print_string ("'" ^ input ^ "'" ^ " is not a valid number. Please enter an integer from 2-10\n"); print_string " > "; try_game (read_line())
   | x -> play_game x
 
 (** [main ()] prompts for the game to play, then starts it. *)
 let main () =
   ANSITerminal.(print_string [green]
                   "\n\n Welcome to 3110 Poker.\n");
-  print_endline " Please enter the number of players you would like at your table.\n";
+  print_endline " Please enter a number of players [2 - 9] that you would like to play with.\n";
   print_string  " > ";
   match read_line () with
   | exception End_of_file -> ()

@@ -8,8 +8,6 @@ type command =
   | Raise of int
   | Start
   | Hand
-  | Hole
-  | Table
   | Call
   | Fold
   | Quit
@@ -18,7 +16,6 @@ type command =
 (** Insufficient funds is raised when a player's input string consists of
     anything other than "raise" and has more  *)
 exception Malformed
-
 
 (** [parse str] parses a player's input into a [command], as follows. The first
     word will always be the action taken by the player. This can be to raise the
@@ -38,7 +35,6 @@ exception Malformed
     [Failure "int_of_string"] if the substring following "raise" is not a
     string representation of an int *)
 val parse : string -> command
-
 
 
 (** NOTES:

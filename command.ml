@@ -2,16 +2,15 @@ type command =
   | Raise of int
   | Start
   | Hand
-  | Hole
-  | Table
   | Call
   | Fold
   | Quit
 
+type ucommands = command list
+
 exception Malformed
 
 exception InadequateCommand of string
-
 
 (* [rid_spaces cmd_lst] is a helper function for parse_branch that takes
    in a string list [cmd_lst] which represents the command, and gets
@@ -29,8 +28,6 @@ let parse (str : string) : command =
   match cmd_lst with
   | "go" :: [] -> Start
   | "hand" :: [] -> Hand
-  | "hole" :: [] -> Hole
-  | "table" :: [] -> Table
   | "call" :: [] -> Call
   | "fold" :: [] -> Fold
   | "leave" :: [] -> Quit
