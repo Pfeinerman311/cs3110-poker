@@ -59,11 +59,12 @@ let get_names (num_players) : string list =
 let name_list_generic (num_players : int) : string list =
   let open List in
   let username = print_string(" What's your name?\n\n > "); read_line() in
+  let tbl_names = map (fun x -> if (x = username) then "Mimno" else x) table_names in
   let rec add_names lst = function
     | 1 -> []
     | num -> hd lst :: add_names (tl lst) (num - 1)
   in
-  username :: List.rev (add_names table_names num_players)
+  username :: List.rev (add_names tbl_names num_players)
 
 
 (* [print_stage st] prints the stage in which the state of the game [st] is *)
@@ -229,6 +230,43 @@ let finish_game (st : State.t) : unit =
   print_state st;
   ANSITerminal.(print_string [green] (" Congratulations " ^ last_man_standing ^ "! \n\n You've reached the end of the game. \n\n"))
 
+let opt_to_keyword (input : string) : string =
+  match input with
+  | "ante" -> "go"
+  | "check" -> "call"
+  | _ -> input
+
+let opt_descriptions (opt : string) : string =
+  match opt with
+  | "ante" -> " pay blind and deal cards."
+  | "check" -> "bet nothing."
+  | "call" -> " match the current bet or raise."
+  | "fold" -> " forfeit your hand."
+  | "raise" -> "bet a number on your hand."
+  | "leave" -> "leave the table and quit the game."
+  | "hand" -> " see your best current hand."
+  | _ -> ""
+
+let print_opts (opts : string list) : unit =
+  let open List in 
+  print_string "  ——————————————————————————————————————————\n";
+  for i = 0 to (length opts) - 1 do
+    print_string (" | ");
+    ANSITerminal.(print_string [Bold] (nth opts i) );
+    print_string (": " ^ opt_descriptions (nth opts i) ^ "\n");
+  done;
+  print_string "  ——————————————————————————————————————————\n";
+  print_string "\n"
+
+let get_opts (st : State.t) : string list =
+  let open State in
+  match get_stage st with
+  | Init -> ["ante"; "leave"]
+  | Deal -> ["check"; "call"; "fold"; "raise"; "leave"]
+  | Flop -> ["hand"; "check"; "call"; "fold"; "raise"; "leave"]
+  | Turn -> ["hand"; "check"; "call"; "fold"; "raise"; "leave"]
+  | River -> ["hand"; "check"; "call"; "fold"; "raise"; "leave"]
+
 (* [play_command st cmd] takes in a commmand [cmd] from the user and uses it to
    pattern match it to a new state which is just a transition function applied
    to the input state [st] *)
@@ -281,13 +319,14 @@ let rec play_command (st : State.t) (cmd : Command.command) : State.t =
 let rec prompt_user_command (st : State.t) : State.t =
   let open Command in
   ANSITerminal.(print_string [green] " It's your turn. Please input a command from below: \n");
-  print_string "  —————————————————————————————————————————\n";
-  print_string " | go | hand | call | fold | raise | leave |\n" ;
-  print_string "  —————————————————————————————————————————\n";
+  print_opts (get_opts st);
+  (* print_string "  —————————————————————————————————————————\n";
+     print_string " | go | hand | call | fold | raise | leave |\n" ;
+     print_string "  —————————————————————————————————————————\n"; *)
   print_string (" > ");
   let input = read_line() in
-  match parse input with
-  | exception Malformed -> ANSITerminal.(print_string [red] "\n This command is not appropriate, please enter one of the commands above.\n"); prompt_user_command st
+  match parse (opt_to_keyword input) with
+  | exception Malformed -> ANSITerminal.(print_string [red] "\n This command is not appropriate, please enter one of the commands below.\n"); prompt_user_command st
   | cmd -> 
     begin match play_command st cmd with
       | same_st when same_st = st -> prompt_user_command same_st
@@ -343,7 +382,7 @@ let rec try_game (input : string) =
 let main () =
   ANSITerminal.(print_string [green]
                   "\n\n Welcome to 3110 Poker.\n");
-  print_endline " Please enter a number of players [2 - 9] that you would like at your table.\n";
+  print_endline " Please enter a number of players [2 - 9] that you would like at your poker table.\n";
   print_string  " > ";
   match read_line () with
   | exception End_of_file -> ()

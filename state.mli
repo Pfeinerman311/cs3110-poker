@@ -95,3 +95,5 @@ val get_winners : t -> (Poker.player * Poker.hand) list
     the returned state gives winner(s) the pot and moves blinds. 
     it also gets a newly shuffled deck and resets the pot and call costs*)
 val end_subgame : t -> t
+
+val deck_tracker : int -> string list list

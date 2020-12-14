@@ -53,6 +53,53 @@ let make_cmp_tests
    End helper functions.
  ********************************************************************)
 
+(* Below are functions used for testing. Primarily, they are ways of checking
+   what each player has at each point of the game. *)
+
+(* [get_all_hole_cards st] displays all of the hole cards around the table
+   at a given state [st] *)
+let get_all_hole_cards (st : State.t) : string list =
+  st
+  |> State.get_active_players
+  |> List.map get_hole_cards
+  |> List.map card_list_to_string
+
+
+(* let 2ptest_st = State. *)
+
+
+
+
+(* [deck_tracker st] returns the first five elements of the deck throughout
+   an entire round by creating a State.t object and transitioning through
+   a round. *)
+let deck_tracker (num_players : int) : string list =
+  let open State in
+  let open Poker in
+  let name_list = ["p1";"p2";"p3";"p4";"p5";"p6";"p7";"p8";"p9"] in
+  let pn = "p" ^ (string_of_int num_players) in
+  let truncated_lst = List.filter (fun p -> p <= pn) name_list in
+  let tst_tbl =
+    match State.init_state (create_players truncated_lst 100) 50 with
+    | Legal st -> st
+    | Illegal -> failwith "Illegal table"
+  in
+  (* let trans_list = [deal; flop; turn; river] in *)
+  (* List.fold_left
+     (fun trans -> card_list_to_string (State.get_deck (trans tst_tbl) )) 
+     (card_list_to_string State.get_deck tst_tbl  :: []) 
+     trans_list *)
+  let init_deck = card_list_to_string (get_deck tst_tbl) in
+  let deal_tbl = deal tst_tbl in
+  let deal_deck = card_list_to_string (get_deck deal_tbl) in
+  let flop_tbl = flop deal_tbl in
+  let flop_deck = card_list_to_string (get_deck flop_tbl) in
+  let turn_tbl = turn flop_tbl in
+  let turn_deck = card_list_to_string (get_deck turn_tbl) in
+  let river_tbl = river turn_tbl in
+  let river_deck = card_list_to_string (get_deck river_tbl) in
+  river_deck :: turn_deck :: flop_deck :: deal_deck :: init_deck :: []
+
 let pot_test  
     (name: string)   
     (players: player list)
