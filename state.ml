@@ -138,7 +138,7 @@ let rec first_n_helper list num stop acc =
   match list with
   | [] -> acc,list
   | h::t -> if num = stop then acc,list 
-    else first_n_helper t (num+1) stop (h::acc)
+    else first_n_helper t (num+1) stop ([h]@acc)
 
 
 let first_n list n = 
@@ -146,16 +146,17 @@ let first_n list n =
 
 let rec deal_helper players deck acc = 
   match players with
-  | [] -> acc
+  | [] -> deck,acc
   | h::t -> 
     let hole_cards , remaining_deck = first_n deck 2 in
     let sorted_hole_cards = List.sort Poker.compare hole_cards in
     let new_player = Poker.set_hole_cards h sorted_hole_cards in
-    deal_helper t (List.tl remaining_deck) (new_player::acc)
+    deal_helper t (remaining_deck) (new_player::acc)
 
 let deal state =
   let rev_player = List.rev state.players in
-  {state with players= deal_helper rev_player state.deck[]; community_cards=[];
+  let deck, players = deal_helper rev_player state.deck [] in
+  {state with players= players; deck=deck; community_cards=[];
               call_cost=state.blind_amount;}
 
 let flop state = 
@@ -216,41 +217,44 @@ let end_subgame state =
                        player_to_act=state.big_blind} 
 
 
-let rec first_n n lst : string list =
-  match n with
-  | 0 -> []
-  | num -> List.hd lst :: (first_n (n - 1) (List.tl lst))
-
+(**let rec first_n n lst : string list =
+   match n with
+   | 0 -> []
+   | num -> List.hd lst :: (first_n (n - 1) (List.tl lst))
+*)
 let deck_tracker (num_players : int) : string list list =
-  (* let open State in *)
-  let open Poker in
-  let open List in
-  let name_list = ["p1";"p2";"p3";"p4";"p5";"p6";"p7";"p8";"p9"] in
-  let pn = "p" ^ (string_of_int num_players) in
-  let truncated_lst = List.filter (fun p -> p <= pn) name_list in
-  let tst_tbl =
-    match init_state (create_players truncated_lst 100) 50 with
-    | Legal st -> st
-    | Illegal -> failwith "Illegal table"
-  in
-  (* let trans_list = [deal; flop; turn; river] in *)
-  (* List.fold_left
-     (fun trans -> card_list_to_string (State.get_deck (trans tst_tbl) )) 
-     (card_list_to_string State.get_deck tst_tbl  :: []) 
-     trans_list *)
-  let init_deck = first_n 4 (card_list_to_string_list (get_deck tst_tbl)) in
-  let deal_tbl = deal tst_tbl in
-  let deal_deck = first_n 4  (card_list_to_string_list (get_deck deal_tbl)) in
-  let flop_tbl = flop deal_tbl in
-  let flop_deck = first_n 4  (card_list_to_string_list (get_deck flop_tbl)) in
-  let turn_tbl = turn flop_tbl in
-  let turn_deck = first_n 4 (card_list_to_string_list (get_deck turn_tbl)) in
-  let river_tbl = river turn_tbl in
-  let river_deck = first_n 4  (card_list_to_string_list (get_deck river_tbl)) in
-  List.rev(
-    ("RIVER :" :: river_deck) 
-    :: (("TURN : ") :: turn_deck) 
-    :: (("FLOP : ") :: flop_deck) 
-    :: (("DEAL : ") :: deal_deck) 
-    :: (("INIT : ") :: init_deck) 
-    :: [])
+  failwith "~"
+(**
+   (* let open State in *)
+   let open Poker in
+   let open List in
+   let name_list = ["p1";"p2";"p3";"p4";"p5";"p6";"p7";"p8";"p9"] in
+   let pn = "p" ^ (string_of_int num_players) in
+   let truncated_lst = List.filter (fun p -> p <= pn) name_list in
+   let tst_tbl =
+   match init_state (create_players truncated_lst 100) 50 with
+   | Legal st -> st
+   | Illegal -> failwith "Illegal table"
+   in
+   (* let trans_list = [deal; flop; turn; river] in *)
+   (* List.fold_left
+   (fun trans -> card_list_to_string (State.get_deck (trans tst_tbl) )) 
+   (card_list_to_string State.get_deck tst_tbl  :: []) 
+   trans_list *)
+   let init_deck = first_n 4 (card_list_to_string_list (get_deck tst_tbl)) in
+   let deal_tbl = deal tst_tbl in
+   let deal_deck = first_n 4  (card_list_to_string_list (get_deck deal_tbl)) in
+   let flop_tbl = flop deal_tbl in
+   let flop_deck = first_n 4  (card_list_to_string_list (get_deck flop_tbl)) in
+   let turn_tbl = turn flop_tbl in
+   let turn_deck = first_n 4 (card_list_to_string_list (get_deck turn_tbl)) in
+   let river_tbl = river turn_tbl in
+   let river_deck = first_n 4  (card_list_to_string_list (get_deck river_tbl)) in
+   List.rev(
+   ("RIVER :" :: river_deck) 
+   :: (("TURN : ") :: turn_deck) 
+   :: (("FLOP : ") :: flop_deck) 
+   :: (("DEAL : ") :: deal_deck) 
+   :: (("INIT : ") :: init_deck) 
+   :: [])
+*)

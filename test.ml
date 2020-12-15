@@ -285,6 +285,27 @@ let test_state_end_subgame
       assert_equal ~printer:string_of_int
         expected_winner_stack actual_stack) 
 
+
+let rec first_n_helper list counter stop acc = 
+  match list with
+  | [] -> acc,list
+  | h::t -> if counter = stop then acc,list 
+    else let _ = print_string (string_of_int (counter)) in 
+      first_n_helper t (counter+1) stop (acc@[h])
+
+
+let first_n list n = 
+  first_n_helper list 0 n []
+
+let test_first_n 
+    (name : string)
+    (list)
+    (n : int): test = 
+  let first,last = first_n list n in
+  name >:: (fun _ ->
+      assert_equal ~printer:string_of_int
+        n (List.length first)) 
+
 let state_tests = [
   pot_test "simple pot increase test with a player raising" players 350;
   deal_test "check 2 players are dealt cards" players;
@@ -292,6 +313,7 @@ let state_tests = [
   community_test "check that community has 3 cards post flop" players 3;
   (** This test should pass but does not *)
   test_state_end_subgame "simple test of end subgame" pre_end_state alice 150;
+  test_first_n "test right number" [1;2;3;4;5;6;7;8] 4;
 ]
 
 let ex_st =
