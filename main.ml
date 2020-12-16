@@ -353,7 +353,8 @@ let rec game_flow (st : State.t) : unit =
   let flop_st = prompt_user_command deal_st in
   let turn_st = prompt_user_command flop_st in
   let river_st = prompt_user_command turn_st in
-  let after_subgame_st = incr_subgame (end_subgame river_st) in
+  let end_round = prompt_user_command river_st in
+  let after_subgame_st = incr_subgame (end_subgame end_round) in
   ANSITerminal.(print_string [Bold; blue] " WINNER(S): ");
   print_winners ((get_winners river_st));
   print_string ("\n");
