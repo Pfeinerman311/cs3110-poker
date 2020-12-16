@@ -1,5 +1,13 @@
 type stage = Init | Deal | Flop | Turn | River
 
+let string_of_stage_to_string stage = 
+  match stage with 
+  | Init -> "Init"
+  | Deal -> "Deal"
+  | Flop -> "Flop"
+  | Turn -> "Turn"
+  | River -> "River"
+
 type t = {
   subgame_number: int;
   game_stage: stage;
@@ -108,7 +116,8 @@ let incr_stage state =
   {state with game_stage = new_stage}
 
 let raise state player amount = 
-  if amount + state.call_cost > Poker.get_stack player || amount < 0 then Illegal
+  if amount + state.call_cost > Poker.get_stack player || amount < 0 
+  then Illegal
   else let new_players = List.map (fun x -> 
       if Poker.get_ID x = Poker.get_ID player then 
         Poker.alter_stack x (-(amount+state.call_cost))

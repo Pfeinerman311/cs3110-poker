@@ -8,7 +8,7 @@ end
 
 module type Bot = sig
   module Info : BotInfo
-  val get_action : State.t -> Command.command
+  val get_action : State.t -> Poker.player -> Command.command
 end
 
 module type BotMaker = 

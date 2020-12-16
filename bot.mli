@@ -16,7 +16,7 @@ module type Bot = sig
 
   (** [get_action s] take a game state and produces a command.
       The bot acts from the perspective of [State.current_player s] *)
-  val get_action : State.t -> Command.command
+  val get_action : State.t -> Poker.player -> Command.command
 end
 
 module type BotMaker = 

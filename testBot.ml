@@ -9,8 +9,9 @@ module Make = functor (I : BotInfo) -> struct
     | Test -> ()
     | _ -> failwith "FoldBot must have difficulty Fold"
 
-  let get_action s = 
-    if State.get_stage s = River then (Fold :Command.command)
-    else Call
-
+  let get_action s p = 
+    let open State in
+    match State.get_stage s with
+    | Turn -> (Fold :Command.command)
+    | _ -> (Call : Command.command)
 end
