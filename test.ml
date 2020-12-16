@@ -373,7 +373,7 @@ let test_testbot
     )
 
 let bot_tests = [
-  test_testbot "Test fold bot folds" (MyTestBot.get_action state)
+  test_testbot "Test fold bot folds" (MyTestBot.get_action state bob)
 ]
 
 let suite =

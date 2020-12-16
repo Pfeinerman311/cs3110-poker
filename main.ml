@@ -189,12 +189,17 @@ let play_bot_action
     (st : State.t) 
     (p : Poker.player)
   : State.t =
-  match MyTestBot.get_action st with
-  | _ ->
+  match MyTestBot.get_action st p with
+  | Call ->
     begin match State.call st p with
       | Legal new_st -> ANSITerminal.(print_string [green] ("\n\n " ^ (Poker.get_name p) ^ " has chosen to call\n")) ; new_st
       | Illegal -> failwith "Bot cannot call"
     end
+  | Fold -> begin match State.call st p with 
+      | Legal new_st -> ANSITerminal.(print_string [green] ("\n\n " ^ (Poker.get_name p) ^ " has chosen to fold\n")) ; new_st
+      | Illegal -> failwith "Bot cannot call"
+    end
+  | _ -> failwith "unimplemented"
 
 (* [play_bots st] plays the commands for the bots in a round where only the
    user (aka player 1) has had their action processed. 
