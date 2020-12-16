@@ -9,6 +9,10 @@ module Make = functor (I : BotInfo) -> struct
 
   let calculate_prob_of_drawing_cards cards_list state = 
     let stage = State.get_stage state in
+    (** the probability of drawing a specific cards in the next b draws 
+        out of n cards is: (n - a) choose (b - a) / (n choose b) 
+        the calculations in get_prob are pre-computed by this formula to save
+        computation time *)
     let get_prob cards = 
       match List.length cards with
       | 1 -> begin 
