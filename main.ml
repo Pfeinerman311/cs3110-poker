@@ -151,8 +151,8 @@ let rec get_player_stacks (players : Poker.player list) (cp_name: string) (bb_na
    their stack amounts.
 
    For example, information for three players, each with a stack of 150, player 
-   1 has the big blind, player 3 is the current player would be:
-   [ | Player1-150 (Big Blind) | Player2-50 | Player3-50 (Current Player) | ] *)
+   1 has the big blind would be:
+   [ | Player1-150 (Big Blind) | Player2-50 | Player3-50 | ] *)
 let print_player_info (st : State.t) : unit =
   let open State in
   let open Poker in
@@ -213,11 +213,12 @@ let play_bot_action
    the second player. This function returns a game state in which the last n - 1 
    players in an n-player table have made a decision.
 *)
-let rec play_bots (st : State.t) : State.t =
+let play_bots (st : State.t) : State.t =
   let open State in
   let open List in
+  print_player_info st;
   st
-  |> get_players
+  |> get_active_players
   |> tl
   |> fold_left play_bot_action st
 
@@ -323,20 +324,26 @@ let rec play_command (st : State.t) (cmd : Command.command) : State.t =
 
 let rec prompt_user_command (st : State.t) : State.t =
   let open Command in
-  ANSITerminal.(print_string [green] " It's your turn. Please input a command from below: \n");
-  print_opts (get_opts st);
-  (* print_string "  —————————————————————————————————————————\n";
-     print_string " | go | hand | call | fold | raise | leave |\n" ;
-     print_string "  —————————————————————————————————————————\n"; *)
-  print_string (" > ");
-  let input = read_line() in
-  match parse (opt_to_keyword input) with
-  | exception Malformed -> ANSITerminal.(print_string [red] "\n This command is not appropriate, please enter one of the commands below.\n"); prompt_user_command st
-  | cmd -> 
-    begin match play_command st cmd with
-      | same_st when same_st = st -> prompt_user_command same_st
-      | new_st -> print_state new_st; new_st
-    end
+  let open State in
+  let open List in
+  if (st |> get_active_players |> length) < 2 
+  then end_subgame st
+  else(
+    ANSITerminal.(print_string [green] " It's your turn. Please input a command from below: \n");
+    print_opts (get_opts st);
+    (* print_string "  —————————————————————————————————————————\n";
+       print_string " | go | hand | call | fold | raise | leave |\n" ;
+       print_string "  —————————————————————————————————————————\n"; *)
+    print_string (" > ");
+    let input = read_line() in
+    match parse (opt_to_keyword input) with
+    | exception Malformed -> ANSITerminal.(print_string [red] "\n This command is not appropriate, please enter one of the commands below.\n"); prompt_user_command st
+    | cmd -> 
+      begin match play_command st cmd with
+        | same_st when same_st = st -> prompt_user_command same_st
+        | new_st -> print_state new_st; new_st
+      end
+  )
 
 let rec print_winners (winners : (Poker.player * Poker.hand) list) : unit =
   let open State in
@@ -359,13 +366,13 @@ let rec game_flow (st : State.t) : unit =
   let turn_st = prompt_user_command flop_st in
   let river_st = prompt_user_command turn_st in
   let end_round = prompt_user_command river_st in
-  let after_subgame_st = incr_subgame (end_subgame end_round) in
+  let after_subgame_st = (end_subgame end_round) in
   ANSITerminal.(print_string [Bold; blue] " WINNER(S): ");
   print_winners ((get_winners river_st));
   print_string ("\n");
   if List.length (get_active_players after_subgame_st) < 2 
   then finish_game after_subgame_st 
-  else game_flow after_subgame_st
+  else game_flow (incr_subgame after_subgame_st)
 
 let play_game (num_players : int) : unit =
   let open Poker in
