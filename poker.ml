@@ -36,11 +36,11 @@ type rank_tal = {
 
 let hand_type hand =
   match hand with
-  | (h, t) -> h
+  | {tp = tp; cards = c} -> tp
 
 let hand_cards hand =
   match hand with
-  | (h, t) -> t
+  | {tp = tp; cards = c} -> c
 
 let card_rank card =
   match card with

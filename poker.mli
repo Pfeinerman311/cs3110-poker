@@ -24,6 +24,32 @@ type hand = {
   cards : card list;
 }
 
+type rank_tal = {
+  rank : rank;
+  tally : int;
+}
+
+(** [hand_type h] returns the hand type of hand [h]. *)
+val hand_type: hand -> hand_tp
+
+(** [hand_cards h] returns the list of cards in hand [h]. *)
+val hand_cards: hand -> card list
+
+(** [card_rank c] returns the rank of card [c]. *)
+val card_rank: card -> rank
+
+(** [card_rank c] returns the rank of card [c]. *)
+val card_suit: card -> suit
+
+(** [first_card [c1; ... ; cn]] returns the first card in the
+    list of cards [c1; ... ; cn] or raises an exception if the
+    list is empty. *)
+val first_card: card list -> card
+
+(** [last_card [c1; ... ; cn]] returns the last card in the
+    list of cards [c1; ... ; cn] or raises an exception if the
+    list is empty. *)
+val last_card: card list -> card
 
 val get_shuffled_deck: unit -> card list
 
