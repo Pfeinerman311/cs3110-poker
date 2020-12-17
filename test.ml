@@ -168,8 +168,6 @@ let best_hand_test
       assert_equal ~cmp:hand_comparer ~printer:(hand_to_string)
         expected_output (get_best_hand player community_cards)) 
 
-
-
 let c1 = [(Three, Clubs); (Ace, Clubs); (Seven, Diamonds); (Six, Clubs);
           (Four, Diamonds)]
 let c2 = [(Two, Spades); (Five, Clubs); (Ace, Clubs); (Two, Diamonds);
@@ -189,18 +187,6 @@ let hl_6 = [(Two, Hearts); (Ace, Hearts)]
 let hl_7 = [(Ace, Spades); (Ace, Hearts)]
 let hl_8 = [(Two, Clubs); (Five, Clubs)]
 let hl_9 = [(Queen, Spades); (Ten, Spades)]
-
-let p0 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_0}
-let p1 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_1}
-let p2 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_2}
-let p3 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_3}
-let p4 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_4}
-let p5 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_5}
-let p6 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_6}
-let p7 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_7}
-let p8 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_8}
-let p9 = {name = "Parker"; id = 2; active = true; stack = 0; hole_cards = hl_9}
-
 
 let h0 = {tp = High_Card; cards = [(King, Hearts)]}
 let h1 = {tp = Pair; cards = [(Four, Clubs); (Four, Diamonds)]}
@@ -225,18 +211,26 @@ let h9 = {tp = Royal_Flush; cards = [(Ten, Spades); (Jack, Spades);
                                      (Queen, Spades); (King, Spades); 
                                      (Ace, Spades)]}
 
+let make_player cards =
+  {name = "Parker";
+   id = 2;
+   active = true;
+   stack = 0;
+   hole_cards = cards}
+
+
 let poker_tests = 
   [
-    best_hand_test "Parker highcard test" p0 c1 h0; 
-    best_hand_test "Parker pair test" p1 c1 h1;
-    best_hand_test "Parker two pair test" p2 c1 h2;
-    best_hand_test "Parker three of a kind test" p3 c1 h3;
-    best_hand_test "Parker straight test" p4 c1 h4;
-    best_hand_test "Parker flush test" p5 c1 h5;
-    best_hand_test "Parker full house test" p6 c2 h6;
-    best_hand_test "Parker four of a kind test" p7 c2 h7;
-    best_hand_test "Parker straight flush test" p8 c3 h8;
-    best_hand_test "Parker royal flush test" p9 c4 h9;
+    best_hand_test "Parker highcard test" (make_player hl_0) c1 h0; 
+    best_hand_test "Parker pair test" (make_player hl_1) c1 h1;
+    best_hand_test "Parker two pair test" (make_player hl_2) c1 h2;
+    best_hand_test "Parker three of a kind test" (make_player hl_3) c1 h3;
+    best_hand_test "Parker straight test" (make_player hl_4) c1 h4;
+    best_hand_test "Parker flush test" (make_player hl_5) c1 h5;
+    best_hand_test "Parker full house test" (make_player hl_6) c2 h6;
+    best_hand_test "Parker four of a kind test" (make_player hl_7) c2 h7;
+    best_hand_test "Parker straight flush test" (make_player hl_8) c3 h8;
+    best_hand_test "Parker royal flush test" (make_player hl_9) c4 h9;
   ]
 
 let command_tests = 
