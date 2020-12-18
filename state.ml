@@ -195,7 +195,9 @@ let get_winners state =
     in
     (x, (Poker.get_best_hand x potential_cards)) 
   in
-  let best_hands = List.map player_to_tup state.players in
+  let best_hands_1 = List.map player_to_tup state.players in
+  let best_hands = 
+    List.filter (fun x -> Poker.is_active (fst x)) best_hands_1 in
   let sorted_hands = 
     List.sort (fun x y -> Poker.hand_compare (snd x) (snd y)) best_hands |>
     List.rev
