@@ -1,5 +1,8 @@
 open Bot
-
+open State
+open Poker
+open List
+open Command
 
 (* This is a list of predetermined names for input into build_table *)
 let table_names = 
@@ -14,9 +17,6 @@ let table_names =
    "Hopcroft"
   ]
 
-let player_names = ["Cesar"; "Dean"; "Parker"]
-let start_stack = 100
-let players = Poker.create_players player_names start_stack 
 
 module TestBotInfo = struct
   let diff = Test
@@ -24,16 +24,11 @@ module TestBotInfo = struct
 end
 
 module MyTestBot = TestBot.Make(TestBotInfo)
-let state = match (State.init_state players 0) with
-  | Illegal -> failwith("Illegal Raise should be legal")
-  | Legal t -> t 
-
-(* JUST PRINTER FUNCTIONS ABOVE ————————————————————————————————————————————— *)
 
 (* [build_table] creates a list of players with a given stack size (100) for
    simplicity *)
 let build_table (names : string list) (stack_size : int) =
-  match State.init_state (Poker.create_players names 100) 5 with
+  match State.init_state (Poker.create_players names 100) 0 with
   | Legal t -> t
   | Illegal -> failwith "unable to initialize table"
 
@@ -57,7 +52,6 @@ let get_names (num_players) : string list =
   username :: List.rev (add_names num_players)
 
 let name_list_generic (num_players : int) : string list =
-  let open List in
   let username = print_string(" What's your name?\n\n > "); read_line() in
   let tbl_names = map (fun x -> if (x = username) then "Mimno" else x) table_names in
   let rec add_names lst = function
@@ -69,8 +63,6 @@ let name_list_generic (num_players : int) : string list =
 
 (* [print_stage st] prints the stage in which the state of the game [st] is *)
 let print_stage (st : State.t) : unit =
-  let open Poker in
-  let open State in
   ANSITerminal.(print_string [green;Bold] "\n Game Stage: ");
   match get_stage st with
   | Init -> print_string ("Initial\n");
@@ -83,26 +75,18 @@ let print_stage (st : State.t) : unit =
    players which are still in the game, aka, those which have an active field
    equal to true *)
 let get_active_players (st : State.t) : Poker.player list =
-  let open Poker in
-  let open State in
-  let open List in
   st 
   |> get_players 
   |> filter (fun x -> is_active x = true)
 
 (* [print_pot table] prints the amount in the pot *)
 let print_pot table : unit =
-  let open Poker in
-  let open State in
   let pot = table |> get_pot in
   print_string("\n | Pot: " ^ (string_of_int pot) ^ "\n")
 
 (* [print_community_cards table] prints the community cards for the game at
    state [table] *)
 let print_community_cards (st : State.t) (color_print : bool) : unit =
-  let open Poker in
-  let open State in
-  let open List in
   let community_cards = 
     st
     |> get_community_cards
@@ -115,9 +99,6 @@ let print_community_cards (st : State.t) (color_print : bool) : unit =
 (* [print_hole_cards table] prints the hole cards for player 1, which we assume 
    here to be the user *)
 let print_hole_cards (st : State.t) (color_print : bool) : unit =
-  let open Poker in
-  let open State in
-  let open List in
   let hole_cards = 
     st
     |> get_players
@@ -136,17 +117,16 @@ let print_hole_cards (st : State.t) (color_print : bool) : unit =
    be:
     [ | Player 1-150 | Player 2-150 | Player 3-150 | ] *)
 let rec get_player_stacks (players : Poker.player list) (cp_name: string) (bb_name : string) : string =
-  let open Poker in
   match players with
   | [] -> " |"
   | h :: t ->
-    (" | " ^ get_name h ^ " — " ^ (string_of_int (get_stack h))
+    (" | " ^ Poker.get_name h ^ " — " ^ (string_of_int (get_stack h)) ^ (h |> get_ID |> string_of_int)
      (* ^ (if get_name h = cp_name then " (Current Player)" else "") *)
-     ^ (if get_name h = bb_name then " (Big Blind)" else ""))
+     ^ (if Poker.get_name h = bb_name then " (Big Blind)" else ""))
     ^ get_player_stacks t cp_name bb_name
 
 
-(* [print_player_stacks players] returns information about the players in the 
+(* [print_player_info players] returns information about the players in the 
    game. Specifically it prints a line with name of the active players and 
    their stack amounts.
 
@@ -154,11 +134,9 @@ let rec get_player_stacks (players : Poker.player list) (cp_name: string) (bb_na
    1 has the big blind would be:
    [ | Player1-150 (Big Blind) | Player2-50 | Player3-50 | ] *)
 let print_player_info (st : State.t) : unit =
-  let open State in
-  let open Poker in
   let players = get_active_players st in
-  let cp_name = get_name ((current_player) st) in
-  let bb_name = get_name ((get_big_blind) st) in
+  let cp_name = Poker.get_name ((current_player) st) in
+  let bb_name = Poker.get_name ((get_big_blind) st) in
   print_string (get_player_stacks (players) (cp_name) (bb_name))
 
 
@@ -169,9 +147,6 @@ let print_player_info (st : State.t) : unit =
    - the user's hole cards (if any)
 *)
 let print_state (st : State.t) : unit =
-  let open Poker in
-  let open State in
-  let open Command in
   print_stage st;
   print_player_info (st);
   print_pot st;
@@ -179,7 +154,6 @@ let print_state (st : State.t) : unit =
   print_hole_cards st false
 
 let transition (st : State.t) (trans : State.t -> State.t) : State.t =
-  let open State in
   let new_stage = incr_stage st in
   trans new_stage
 
@@ -189,6 +163,8 @@ let play_bot_action
     (st : State.t) 
     (p : Poker.player)
   : State.t =
+  print_string (string_of_int (st |> current_player |> get_ID));
+  print_string ( (st |> current_player |> Poker.get_name));
   match MyTestBot.get_action st p with
   | Call ->
     begin match State.call st p with
@@ -214,8 +190,6 @@ let play_bot_action
    players in an n-player table have made a decision.
 *)
 let play_bots (st : State.t) : State.t =
-  let open State in
-  let open List in
   print_player_info st;
   st
   |> get_active_players
@@ -223,7 +197,6 @@ let play_bots (st : State.t) : State.t =
   |> fold_left play_bot_action st
 
 let play_round (st : State.t) (trans : State.t -> State.t) : State.t =
-  let open State in
   let after_bots = if (State.get_stage st = Init) then st else play_bots st in
   let after_trans = transition after_bots trans in
   after_trans
@@ -254,7 +227,6 @@ let opt_descriptions (opt : string) : string =
   | _ -> ""
 
 let print_opts (opts : string list) : unit =
-  let open List in 
   print_string "  ——————————————————————————————————————————\n";
   for i = 0 to (length opts) - 1 do
     print_string (" | ");
@@ -265,7 +237,6 @@ let print_opts (opts : string list) : unit =
   print_string "\n"
 
 let get_opts (st : State.t) : string list =
-  let open State in
   match get_stage st with
   | Init -> ["ante"; "leave"]
   | Deal -> ["check"; "call"; "fold"; "raise"; "leave"]
@@ -277,9 +248,6 @@ let get_opts (st : State.t) : string list =
    pattern match it to a new state which is just a transition function applied
    to the input state [st] *)
 let rec play_command (st : State.t) (cmd : Command.command) : State.t =
-  let open State in
-  let open Command in
-  let open Poker in
   let to_next_stage =
     match get_stage st with
     | Init -> deal
@@ -295,14 +263,6 @@ let rec play_command (st : State.t) (cmd : Command.command) : State.t =
     if (get_stage st = Init || get_stage st = Deal) 
     then (ANSITerminal.(print_string [red] "\n You have not been dealt any cards yet. Please pick a different option. \n\n"); st)
     else (ANSITerminal.(print_string [green] ("\n Your best hand is: " ^ hand_to_string (get_best_hand user (get_community_cards st)) ^ "\n\n")); st)
-  (* | Hole -> 
-     if (get_stage st = Init) 
-     then (ANSITerminal.(print_string [red] "\n You have not been dealt any cards yet. Please pick a different option. \n\n"); st) 
-     else (print_hole_cards st true; st)
-     | Table -> 
-     if (get_stage st = Init) 
-     then (ANSITerminal.(print_string [red] "\n You have not been dealt any cards yet. Please pick a different option. \n\n"); st) 
-     else (print_community_cards st true; print_string "\n"; st) *)
   | Call -> 
     if (get_stage st = Init) 
     then (ANSITerminal.(print_string [red] "\n You have not been dealt any cards yet. Please pick a different option. \n\n"); st) 
@@ -320,43 +280,36 @@ let rec play_command (st : State.t) (cmd : Command.command) : State.t =
         | Legal new_st -> print_string (" You have chosen to raise " ^ string_of_int c ^ ".\n"); play_round new_st to_next_stage
         | Illegal -> ANSITerminal.(print_string [red] " \nYou are unable to raise this amount.\n\n"); st
       end
+  | Help -> failwith ""
   | Quit -> ANSITerminal.(print_string [green] "\n\n Thanks for playing!\n\n"); Stdlib.exit 0
 
 let rec prompt_user_command (st : State.t) : State.t =
-  let open Command in
-  let open State in
-  let open List in
-  if (st |> get_active_players |> length) < 2 
-  then end_subgame st
-  else(
-    ANSITerminal.(print_string [green] " It's your turn. Please input a command: \n");
-    print_opts (get_opts st);
-    print_string (" > ");
-    let input = read_line() in
-    match parse (opt_to_keyword input) with
-    | exception Malformed -> ANSITerminal.(print_string [red] "\n This command is not appropriate, please enter one of the commands above or type < help >.\n"); prompt_user_command st
-    | cmd -> 
-      begin match play_command st cmd with
-        | same_st when same_st = st -> prompt_user_command same_st
-        | new_st -> print_state new_st; new_st
-      end
-  )
+  (* if (st |> current_player |> get_ID <> 0)
+     then play_command st Start *)
+  (* else( *)
+  ANSITerminal.(print_string [green] " It's your turn. Please input a command: \n");
+  print_opts (get_opts st);
+  print_string (" > ");
+  let input = read_line() in
+  match parse (opt_to_keyword input) with
+  | exception Malformed -> ANSITerminal.(print_string [red] "\n This command is not appropriate, please enter one of the commands above or type < help >.\n"); prompt_user_command st
+  | cmd -> 
+    begin match play_command st cmd with
+      | same_st when same_st = st -> prompt_user_command same_st
+      | new_st -> print_state new_st; new_st
+    end
+(* ) *)
 
 let rec print_winners (winners : (Poker.player * Poker.hand) list) : unit =
-  let open State in
-  let open Poker in
   match winners with
   | [] -> ()
   | (player, hand) :: t -> 
-    let name = get_name player in
+    let name = Poker.get_name player in
     let hole = card_list_to_string (get_hole_cards player) in
     let hand = hand_to_string hand in
     ANSITerminal.(print_string [Bold; blue] ("\n - " ^ name ^ " with hand: " ^hand ^ "\n   and hole: " ^ hole ^ " \n")); print_winners t
 
 let rec game_flow (st : State.t) : unit =
-  let open State in
-  let open Poker in
-  let open Command in
   let init_st = st in
   let deal_st = prompt_user_command (pay_big_blind init_st) in
   let flop_st = prompt_user_command deal_st in
@@ -372,11 +325,9 @@ let rec game_flow (st : State.t) : unit =
   else game_flow (incr_subgame after_subgame_st)
 
 let play_game (num_players : int) : unit =
-  let open Poker in
-  let open State in
-  let open Command in
   let name_list = name_list_generic num_players in
   let init_st = build_table name_list 100 in
+  print_string (List.nth (init_st |> get_players |> List.map (fun x -> Poker.get_name x)) 0);
   print_state init_st;
   game_flow init_st
 
