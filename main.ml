@@ -329,15 +329,12 @@ let rec prompt_user_command (st : State.t) : State.t =
   if (st |> get_active_players |> length) < 2 
   then end_subgame st
   else(
-    ANSITerminal.(print_string [green] " It's your turn. Please input a command from below: \n");
+    ANSITerminal.(print_string [green] " It's your turn. Please input a command: \n");
     print_opts (get_opts st);
-    (* print_string "  —————————————————————————————————————————\n";
-       print_string " | go | hand | call | fold | raise | leave |\n" ;
-       print_string "  —————————————————————————————————————————\n"; *)
     print_string (" > ");
     let input = read_line() in
     match parse (opt_to_keyword input) with
-    | exception Malformed -> ANSITerminal.(print_string [red] "\n This command is not appropriate, please enter one of the commands below.\n"); prompt_user_command st
+    | exception Malformed -> ANSITerminal.(print_string [red] "\n This command is not appropriate, please enter one of the commands above or type < help >.\n"); prompt_user_command st
     | cmd -> 
       begin match play_command st cmd with
         | same_st when same_st = st -> prompt_user_command same_st
