@@ -5,6 +5,7 @@ type command =
   | Call
   | Fold
   | Quit
+  | Help
 
 type ucommands = command list
 
@@ -32,4 +33,5 @@ let parse (str : string) : command =
   | "fold" :: [] -> Fold
   | "leave" :: [] -> Quit
   | "raise" :: num :: [] -> Raise (int_of_string num)
+  | "help" :: [] -> Help
   | _ -> raise Malformed
