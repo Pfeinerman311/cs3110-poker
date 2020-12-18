@@ -11,6 +11,7 @@ type command =
   | Call
   | Fold
   | Quit
+  | Help
 
 
 (** Insufficient funds is raised when a player's input string consists of
