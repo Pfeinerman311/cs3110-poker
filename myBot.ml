@@ -49,6 +49,49 @@ module Make = functor (I : BotInfo) -> struct
      tripple=0.0;
      quad=0.0}
 
+  let get_ranks cards = 
+    List.map (fun x -> fst x) cards
+
+  (** Requires that ranks is sorted *)
+  let rec to_rank_acoss ranks acc current = 
+    match current with 
+    | None ->  begin      
+        match ranks with 
+        | [] -> acc
+        | h::t -> to_rank_acoss t acc (Some (h,1))
+      end
+    | Some curr -> begin
+        match ranks with 
+        | [] -> acc@[curr]
+        | h::t -> begin 
+            let r,n = curr in
+            if r = h then to_rank_acoss t acc (Some (h,n+1))
+            else to_rank_acoss t (acc@[curr]) (Some (h,1))
+          end
+      end
+
+  (** Requires that cards is sorted *)
+  let pair_helper (cards: card list) = 
+    let ranks = get_ranks cards in
+    let rank_freq = to_rank_acoss ranks [] None in 
+    let single = float_of_int (
+        List.fold_left 
+          (fun num x -> if (snd x) < 2 then num + 3 else num)
+          0 rank_freq 
+      )
+    in
+    let diff = List.length (List.sort_uniq 
+                              (fun x y -> (rank_to_int x) - (rank_to_int y) ) 
+                              ranks ) 
+               - List.length ranks
+    in 
+    let double = float_of_int (diff * 6) in 
+    {hand_type=Pair;
+     single=single;
+     double=double;
+     tripple=0.0;
+     quad=0.0}
+
   let rec generate_outs_list_helper curr hand cards acc stage = 
     match curr with 
     | Royal_Flush -> failwith ""
