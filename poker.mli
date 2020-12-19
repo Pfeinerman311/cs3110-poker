@@ -41,6 +41,11 @@ val card_rank: card -> rank
 (** [card_rank c] returns the rank of card [c]. *)
 val card_suit: card -> suit
 
+(**[rank_to_int r] returns the corresponding int to a given rank
+    Example: rank_to_int Two = 2
+             rank_to_int Ace = 14 *)
+val rank_to_int: rank -> int
+
 (** [first_card [c1; ... ; cn]] returns the first card in the
     list of cards [c1; ... ; cn] or raises an exception if the
     list is empty. *)

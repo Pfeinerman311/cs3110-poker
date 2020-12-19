@@ -5,3 +5,4 @@
 #load_rec "command.cmo";;
 #load_rec "state.cmo";;
 #load_rec "testBot.cmo";;
+#load_rec "myBot.cmo";;

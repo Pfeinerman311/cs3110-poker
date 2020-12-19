@@ -1,32 +1,56 @@
 open Bot
+open Poker
 
 module Make = functor (I : BotInfo) -> struct
 
   module Info = I
 
   type outs = {
-    hand_type : Poker.hand_tp;
+    hand_type : hand_tp;
     single : float;
     double : float;
     tripple : float;
-  }
-  type out_prob = {
-    hand_type : Poker.hand_tp;
-    prob: float;
+    quad : float
   }
 
+  type out_prob = {
+    hand_type : hand_tp;
+    prob: float
+  }
+
+  (** Calculates ([n] choose [k]) *)
   let choose n k = 
     let rec helper i acc = 
       if i = k then acc
-      else let prod = (n +. 1. -. i) /. i in
-        helper (i +. 1.) (acc *.  prod)
-    in
+      else helper (i +. 1.) (acc *.  ( n +. 1. -. i ) /. i) 
+    in 
     helper 1.0 1.0
 
+  let inc_hand h = 
+    match h with 
+    | Royal_Flush-> failwith "inc_hand should not be called on royal flush"
+    | Straight_Flush -> Royal_Flush
+    | Four_Kind -> Straight_Flush
+    | Full_House -> Four_Kind
+    | Flush -> Full_House
+    | Straight -> Flush
+    | Three_Kind -> Straight
+    | Two_Pair -> Three_Kind
+    | Pair -> Two_Pair
+    | High_Card -> Pair
 
-  let get_cards_that_improve_hand player com_cards stage = 
-    let best_hand = Poker.get_best_hand player com_cards in 
-    match best_hand.tp with 
+  let highcard_helper (cards : card list) = 
+    let high_card = List.hd cards in
+    let rank = Poker.rank_to_int (fst high_card) in 
+    let single_outs = 14.0 -. float_of_int (rank) in 
+    {hand_type=High_Card;
+     single=single_outs;
+     double=0.0;
+     tripple=0.0;
+     quad=0.0}
+
+  let rec generate_outs_list_helper curr hand cards acc stage = 
+    match curr with 
     | Royal_Flush -> failwith ""
     | Straight_Flush -> failwith ""
     | Four_Kind -> failwith ""
@@ -36,7 +60,18 @@ module Make = functor (I : BotInfo) -> struct
     | Three_Kind -> failwith ""
     | Two_Pair -> failwith ""
     | Pair -> failwith ""
-    | High_Card -> failwith ""
+    | High_Card -> 
+      generate_outs_list_helper (inc_hand curr) hand cards acc stage
+
+  let generate_outs_list start hand cards stage = 
+    generate_outs_list_helper start cards stage []
+
+  let get_cards_that_improve_hand player com_cards stage = 
+    let best_hand = Poker.get_best_hand player com_cards in 
+    generate_outs_list best_hand.tp best_hand.cards 
+      (List.concat [player.hole_cards;com_cards] |> 
+       List.sort compare |> List.rev )
+      stage
 
   let calculate_prob_of_drawing_cards outs_list state = 
     let stage = State.get_stage state in
@@ -75,7 +110,10 @@ module Make = functor (I : BotInfo) -> struct
         | Turn -> 0.
         | _ -> failwith "this should be unreachable"
       in
-      {hand_type = out.hand_type;prob = (single_prob+.double_prob+.tripple_prob)}
+      let quad_prob = 0.0
+      in
+      {hand_type = out.hand_type;
+       prob = (single_prob+.double_prob+.tripple_prob+.quad_prob)}
     in
     List.map get_prob outs_list
 
@@ -89,8 +127,8 @@ module Make = functor (I : BotInfo) -> struct
     failwith "Unimplemented"
 
   let get_action s p = 
-    let stage = State.get_stage s in
-    let hand = Poker.get_hole_cards in 
-    failwith "Unimplemnted"
+    (** let stage = State.get_stage s in
+        let hand = get_hole_cards in *)
+    (Fold : Command.command)
 
-end
+end 
