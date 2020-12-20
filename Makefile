@@ -21,6 +21,7 @@ play:
 	
 clean:
 	ocamlbuild -clean
+	rm -rf doc.public doc.private
 
 docs: docs-public docs-private
 
