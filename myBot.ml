@@ -92,8 +92,32 @@ module Make = functor (I : BotInfo) -> struct
      tripple=0.0;
      quad=0.0}
 
-  let twopair_helper cards = 
-    failwith "Unimplemented"
+  (** to see how many ways we can get a two pair we need to look at
+      the number of ways we can get a matching card and a pair for ranks 
+      we only have one of. We also need to look at how many ways we can get
+      another pair if we already have one. 
+
+      these are the numbers computed for when snd x = 1 and snd x = 2.*)
+  let twopair_helper cards =
+    let ranks = get_ranks cards in
+    let rank_freq = to_rank_acoss ranks [] None in
+    let temp_outs = {hand_type=Two_Pair;
+                     single=0.0;
+                     double=0.0;
+                     tripple=0.0;
+                     quad=0.0} 
+    in
+    let update_outs state x = 
+      if snd x = 1 then 
+        let trip = 3.0 *. 6.0 *. float_of_int (13- List.length rank_freq) in 
+        {state with tripple=state.tripple +. trip}
+      else if snd x = 2 then  
+        let double = 6. *. float_of_int (13- List.length rank_freq) in
+        let single = 4. *. float_of_int (List.length rank_freq) -. 1 in
+        {state with single=single; double=double}
+      else state
+    in
+    List.fold_left update_outs temp_outs rank_freq
 
   let three_helper cards = 
     failwith "Unimplemented"
@@ -159,7 +183,7 @@ module Make = functor (I : BotInfo) -> struct
 
   let calculate_prob_of_drawing_cards outs_list state = 
     let stage = State.get_stage state in
-    (** the probability of drawing a specific cards in the next b draws 
+    (** the probability of drawing [a] specific cards in the next b draws 
         out of n cards is: (n - a) choose (b - a) / (n choose b)
 
         explanation: if you are choosing [a] cards then those are fixed.
