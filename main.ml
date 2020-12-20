@@ -35,7 +35,7 @@ module MyTestBot = TestBot.Make(TestBotInfo)
 (* [build_table] creates a list of players with a given stack size (100) for
    simplicity *)
 let build_table (names : string list) (stack_size : int) =
-  match State.init_state (Poker.create_players (names) 100) 0 with
+  match init_state (create_players (names) 100) 0 with
   | Legal t -> t
   | Illegal -> failwith "unable to initialize table"
 
@@ -121,7 +121,7 @@ let print_hole_cards (st : State.t) (color_print : bool) : unit =
    be:
     [ | Player 1-150 | Player 2-150 | Player 3-150 | ] *)
 let rec get_player_stacks (players : Poker.player list) (cp_name: string) (bb_name : string) : string =
-  match rev players with
+  match players with
   | [] -> " |"
   | h :: t ->
     (" | " ^ Poker.get_name h ^ " — " ^ (string_of_int (get_stack h)) ^ " ID: " ^ (h |> get_ID |> string_of_int)
@@ -267,7 +267,7 @@ let rec play_command (st : State.t) (cmd : Command.command) : State.t =
     | Turn -> river
     | River -> deal
   in
-  let user = st |> get_players |> List.hd in
+  let user = st |> get_players |> get_next_player (current_player st) in
   match cmd with
   | Start -> play_round st to_next_stage
   | Hand -> 
