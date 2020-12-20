@@ -187,9 +187,8 @@ let rec card_combos cards size =
   else
     match cards with
     | [] -> []
-    | h::t ->
-      let h = List.map (fun x -> h::x) 
-          (card_combos (List.sort_uniq compare t) (size-1)) in
+    | h::t -> let h = List.map (fun x -> h::x) 
+                  (card_combos (List.sort_uniq compare t) (size-1)) in
       let no_h = card_combos (List.sort_uniq compare t) size in
       h@no_h
 
