@@ -1,14 +1,16 @@
-(** The abstract type of the stage of the game *)
+(** The module that handles each state and temporary date for a poker game. *)
+
+(** [stage] is the abstract type of the stage of the game *)
 type stage = Init | Deal | Flop | Turn | River
 
-(** The abstract type of values representing the game state. *)
+(** [t] is the abstract type of values representing the game state. *)
 type t
 
-(** The type representing the result of an attempted bet *)
+(** [result] is the type representing the result of an attempted bet *)
 type result = Legal of t | Illegal
 
-(** Initalizes a game state with the players. Blind is small blind big_blind is 
-    2x small blind *)
+(** [init_state players blind] initalizes a game state with [players] and a
+    [blind] that is equal to the small blind and half of the big blind. *)
 val init_state : Poker.player list -> int -> result
 
 (** [get_subgame t] returns how many subgames have past
