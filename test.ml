@@ -4,6 +4,11 @@ open Command
 open State
 open Bot
 
+(** TESTING METHODOLOGY *)
+
+
+
+
 (** These helper functions are from the A2 release *)
 (********************************************************************
    Here are some helper functions for your testing of set-like lists. 
@@ -284,8 +289,7 @@ let rec first_n_helper list counter stop acc =
   match list with
   | [] -> acc,list
   | h::t -> if counter = stop then acc,list 
-    else let _ = print_string (string_of_int (counter)) in 
-      first_n_helper t (counter+1) stop (acc@[h])
+    else first_n_helper t (counter+1) stop (acc@[h])
 
 
 let first_n list n = 
@@ -308,6 +312,7 @@ let state_tests = [
   (** This test should pass but does not *)
   test_state_end_subgame "simple test of end subgame" pre_end_state alice 150;
   test_first_n "test right number" [1;2;3;4;5;6;7;8] 4;
+  test_first_n "test right number, entire list." [1;2;3;4] 4;
 ]
 
 let ex_st =
@@ -338,15 +343,10 @@ let community_card_test
   name >:: (fun _ -> assert_equal expected_output (community_cards_string st) ~printer: pp_string) 
 
 let main_tests = [
-  community_card_test "In Init stage community cards should not be dealt" (ex_st) "";
-  community_card_test "In Deal stage community cards should not be dealt" (deal ex_st) "";
-  (* The tests below are passing, but shouldn't 
-     get_community_card_test 
-     "In Flop stage community cards should be dealt, aka a non-empty Poker.card list" 
-     (flop ex_st) [];
-     get_community_card_test 
-     "In Turn stage community cards should be dealt, aka a non-empty Poker.card list" 
-     (turn ex_st) []; *)
+  community_card_test "In Init stage community cards should not be dealt" 
+    (ex_st) "";
+  community_card_test "In Deal stage community cards should not be dealt" 
+    (deal ex_st) "";
 ]
 
 module TestBotInfo = struct
