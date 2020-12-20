@@ -4,6 +4,11 @@ open Command
 open State
 open Bot
 
+(** TESTING METHODOLOGY *)
+
+
+
+
 (** These helper functions are from the A2 release *)
 (********************************************************************
    Here are some helper functions for your testing of set-like lists. 
@@ -284,8 +289,7 @@ let rec first_n_helper list counter stop acc =
   match list with
   | [] -> acc,list
   | h::t -> if counter = stop then acc,list 
-    else let _ = print_string (string_of_int (counter)) in 
-      first_n_helper t (counter+1) stop (acc@[h])
+    else first_n_helper t (counter+1) stop (acc@[h])
 
 
 let first_n list n = 
@@ -308,6 +312,7 @@ let state_tests = [
   (** This test should pass but does not *)
   test_state_end_subgame "simple test of end subgame" pre_end_state alice 150;
   test_first_n "test right number" [1;2;3;4;5;6;7;8] 4;
+  test_first_n "test right number, entire list." [1;2;3;4] 4;
 ]
 
 let ex_st =
@@ -338,15 +343,10 @@ let community_card_test
   name >:: (fun _ -> assert_equal expected_output (community_cards_string st) ~printer: pp_string) 
 
 let main_tests = [
-  community_card_test "In Init stage community cards should not be dealt" (ex_st) "";
-  community_card_test "In Deal stage community cards should not be dealt" (deal ex_st) "";
-  (* The tests below are passing, but shouldn't 
-     get_community_card_test 
-     "In Flop stage community cards should be dealt, aka a non-empty Poker.card list" 
-     (flop ex_st) [];
-     get_community_card_test 
-     "In Turn stage community cards should be dealt, aka a non-empty Poker.card list" 
-     (turn ex_st) []; *)
+  community_card_test "In Init stage community cards should not be dealt" 
+    (ex_st) "";
+  community_card_test "In Deal stage community cards should not be dealt" 
+    (deal ex_st) "";
 ]
 
 module TestBotInfo = struct
@@ -356,18 +356,55 @@ end
 
 module MyTestBot = TestBot.Make(TestBotInfo)
 let state = match (init_state players 0) with
-  | Illegal -> failwith("Illegal Raise should be legal")
+  | Illegal -> failwith("Illegal init state should be legal")
   | Legal t -> t 
+
+module MyBot = MyBot.Make(TestBotInfo)
+let mybot_state_good = match (init_state players 10) with
+  | Illegal -> failwith("Illegal init state should be legal")
+  | Legal t -> 
+    t |> incr_stage |> pay_big_blind
+
+
+let bob_bad = {name = "Bob"; id = 2; active = true; stack = 100; 
+               hole_cards = [(Two, Clubs); (Seven, Diamonds)]}
+let bad_players = [alice;bob_bad]
+
+let mybot_state_bad = match (init_state players 10) with
+  | Illegal -> failwith("Illegal init state should be legal")
+  | Legal t -> let st = t |> incr_stage |> pay_big_blind in 
+    match raise st alice 20 with 
+    | Illegal -> failwith("Illegal raise state should be legal")
+    | Legal t -> t
+
 
 let test_testbot  
     (name: string)   
-    (bot_command : command ) : test = 
+    (bot_command : Command.t ) : test = 
   name >:: (fun _ ->
       assert_equal bot_command Call
     )
 
+let test_mybot_goodhand
+    (name: string)   
+    (bot_command : Command.t ) : test = 
+  name >:: (fun _ ->
+      assert_equal bot_command Call
+    )
+
+let test_mybot_badhand    
+    (name: string)   
+    (bot_command : Command.t ) : test = 
+  name >:: (fun _ ->
+      assert_equal bot_command Fold
+    )
+
 let bot_tests = [
-  test_testbot "Test fold bot folds" (MyTestBot.get_action state bob)
+  test_testbot "Test that test bot calls" (MyTestBot.get_action state bob);
+  test_mybot_goodhand "test mybot calls with good hand" 
+    (MyBot.get_action mybot_state_good alice);
+  test_mybot_badhand "test mybot folds with bad hand"
+    (MyBot.get_action mybot_state_bad bob_bad);
 ]
 
 let suite =

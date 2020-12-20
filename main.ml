@@ -157,6 +157,15 @@ let print_state (st : State.t) : unit =
   print_community_cards st false;
   print_hole_cards st false
 
+let rec print_winners (winners : (Poker.player * Poker.hand) list) : unit =
+  match winners with
+  | [] -> ()
+  | (player, hand) :: t -> 
+    let name = Poker.get_name player in
+    let hole = card_list_to_string (get_hole_cards player) in
+    let hand = hand_to_string hand in
+    ANSITerminal.(print_string [Bold; blue] ("\n - " ^ name ^ " with hand: " ^hand ^ "\n   and hole: " ^ hole ^ " \n")); print_winners t
+
 let transition (st : State.t) (trans : State.t -> State.t) : State.t =
   let new_stage = incr_stage st in
   trans new_stage
@@ -192,7 +201,6 @@ let play_bot_action
    players in an n-player table have made a decision.
 *)
 let play_bots (st : State.t) : State.t =
-  print_player_info st;
   st
   |> get_active_players
   |> tl
@@ -201,6 +209,7 @@ let play_bots (st : State.t) : State.t =
 let play_round (st : State.t) (trans : State.t -> State.t) : State.t =
   let after_bots = if (State.get_stage st = Init) then st else play_bots st in
   let after_trans = transition after_bots trans in
+  print_state after_bots;
   after_trans
 
 (* [finish_game st] is a function that prints the necessary things once a game
@@ -208,7 +217,6 @@ let play_round (st : State.t) (trans : State.t -> State.t) : State.t =
    left). *)
 let finish_game (st : State.t) : unit =
   let last_man_standing = st |> get_active_players |> List.hd |> Poker.get_name in
-  print_state st;
   ANSITerminal.(print_string [green] (" Congratulations " ^ last_man_standing ^ "! \n\n You've reached the end of the game. \n\n"))
 
 let opt_to_keyword (input : string) : string =
@@ -253,21 +261,21 @@ let print_malformed (st : State.t) : unit =
   in
   ANSITerminal.(print_string [red] msg)
 
+let to_next_stage (st : State.t) : (State.t -> State.t) =
+  match get_stage st with
+  | Init -> deal
+  | Deal -> flop
+  | Flop -> turn
+  | Turn -> river
+  | River -> deal
+
 (* [play_command st cmd] takes in a commmand [cmd] from the user and uses it to
    pattern match it to a new state which is just a transition function applied
    to the input state [st] *)
-let rec play_command (st : State.t) (cmd : Command.command) : State.t =
-  let to_next_stage =
-    match get_stage st with
-    | Init -> deal
-    | Deal -> flop
-    | Flop -> turn
-    | Turn -> river
-    | River -> deal
-  in
+let rec play_command (st : State.t) (cmd : Command.t) : State.t =
   let user = get_player_by_id st 0 in
   match cmd with
-  | Start -> play_round st to_next_stage
+  | Start -> play_round st (to_next_stage st)
   | Hand -> 
     if (get_stage st = Init || get_stage st = Deal) 
     then (ANSITerminal.(print_string [red] "\n You have not been dealt any cards yet. Please pick a different option. \n\n"); st)
@@ -277,22 +285,22 @@ let rec play_command (st : State.t) (cmd : Command.command) : State.t =
     then (ANSITerminal.(print_string [red] "\n You have not been dealt any cards yet. Please pick a different option. \n\n"); st) 
     else
       begin match call st user with
-        | Legal new_st -> ANSITerminal.(print_string [green] "\n You have chosen to call.\n\n"); play_round new_st to_next_stage
+        | Legal new_st -> ANSITerminal.(print_string [green] "\n You have chosen to call.\n\n"); play_round new_st (to_next_stage st)
         | Illegal -> ANSITerminal.(print_string [red] " \nYou are unable to call.\n\n"); st
       end
-  | Fold -> print_string " You have chosen to fold\n\n"; play_round (fold st user) to_next_stage
+  | Fold -> print_string " You have chosen to fold\n\n"; play_round (fold st user) (to_next_stage st)
   | Raise c -> 
     if (get_stage st = Init) 
     then (ANSITerminal.(print_string [red] " \nYou have not been dealt any cards yet. Please pick a different option. \n\n"); st) 
     else 
       begin match raise st user c with
-        | Legal new_st -> print_string (" You have chosen to raise " ^ string_of_int c ^ ".\n"); play_round new_st to_next_stage
+        | Legal new_st -> print_string (" You have chosen to raise " ^ string_of_int c ^ ".\n"); play_round new_st (to_next_stage st)
         | Illegal -> ANSITerminal.(print_string [red] " \nYou are unable to raise this amount.\n\n"); st
       end
   | Help -> print_opts (get_opts st); st
   | Quit -> ANSITerminal.(print_string [green] "\n\n Thanks for playing!\n\n"); Stdlib.exit 0
 
-let rec prompt_user_command (st : State.t) : State.t =
+let rec prompt_user_command_dep (st : State.t) : State.t =
   if (st |> get_active_players |> List.filter (fun x -> get_ID x = 0) |> List.length = 0)
   then play_command st Start 
   else(
@@ -306,33 +314,83 @@ let rec prompt_user_command (st : State.t) : State.t =
     print_string (" > ");
     let input = read_line() in
     match parse (opt_to_keyword input) with
-    | exception Malformed -> print_malformed st; prompt_user_command st
-    | cmd -> 
-      begin match play_command st cmd with
-        | same_st when same_st = st -> prompt_user_command same_st
+    | exception Malformed -> print_malformed st; prompt_user_command_dep st
+    | cmd -> begin match play_command st cmd with
+        | same_st when same_st = st -> prompt_user_command_dep same_st
         | new_st -> print_state new_st; new_st
       end
   )
 
-let rec print_winners (winners : (Poker.player * Poker.hand) list) : unit =
-  match winners with
-  | [] -> ()
-  | (player, hand) :: t -> 
-    let name = Poker.get_name player in
-    let hole = card_list_to_string (get_hole_cards player) in
-    let hand = hand_to_string hand in
-    ANSITerminal.(print_string [Bold; blue] ("\n - " ^ name ^ " with hand: " ^hand ^ "\n   and hole: " ^ hole ^ " \n")); print_winners t
+let rec prompt_user_command (st : State.t) : Command.t =
+  if (st |> get_active_players |> List.filter (fun x -> get_ID x = 0) |> List.length = 0)
+  then Start 
+  else(
+    let msg = 
+      " It's your turn. Please input a command, "
+      ^ {|or type "help" for a list of possible commands.|}
+      ^ "\n "
+    in
+    ANSITerminal.(print_string [green] msg);
+    line_div 87;
+    print_string (" > ");
+    let input = read_line() in
+    match parse (opt_to_keyword input) with
+    | exception Malformed -> print_malformed st; prompt_user_command st
+    | cmd -> cmd
+  )
+
+(* let after_play (st : State.t) (cmd : Command.t) : State.t =
+   match play_command st cmd with
+   | same_st when same_st = st -> prompt_user_command same_st
+   | new_st -> print_state new_st; new_st *)
+
+(* Returns the state of the game after all active players have played *)
+let rec state_after_round (st : State.t) : State.t =
+  st 
+  |> get_active_players
+  |> fold_left 
+    (fun st p -> state_after_player st p)
+    st
+
+and state_after_player (st : State.t) (player: Poker.player) : State.t =
+  (* If id is the last then increment the stage and show winners *)
+  match get_command st with
+  | Raise i -> 
+    begin match raise st player i with
+      | Legal new_st -> state_after_player st player
+      | Illegal -> state_after_player st player
+    end
+  | Start -> st (* doesn't increment the current player *)
+  | Hand -> st (* doesn't increment the current player *)
+  | Call -> 
+    begin match call st player with
+      | Legal new_st -> new_st
+      | Illegal -> st
+    end
+  | Fold -> fold st player
+  | Quit -> Stdlib.exit 0
+  | Help -> print_opts (get_opts st); state_after_player st player
+
+(* [get_command st] returns the commndof the current player in the current 
+   state of the game [st] *)
+and get_command (st : State.t) : Command.t =
+  let current = st |> current_player in
+  let current_id = current |> get_ID in 
+  if current_id = 0 then prompt_user_command st
+  else MyTestBot.get_action st current
+
+
 
 let rec game_flow (st : State.t) : unit =
   let init_st = st in
-  let deal_st = prompt_user_command (pay_big_blind init_st) in
-  let flop_st = prompt_user_command deal_st in
-  let turn_st = prompt_user_command flop_st in
-  let river_st = prompt_user_command turn_st in
-  let end_round = prompt_user_command river_st in
+  let deal_st = prompt_user_command_dep (pay_big_blind init_st) in
+  let flop_st = prompt_user_command_dep deal_st in
+  let turn_st = prompt_user_command_dep flop_st in
+  let river_st = prompt_user_command_dep turn_st in
+  let end_round = prompt_user_command_dep river_st in
   let after_subgame_st = (end_subgame end_round) in
   ANSITerminal.(print_string [Bold; blue] " WINNER(S): ");
-  print_winners ((get_winners river_st));
+  print_winners ((get_winners end_round));
   print_string ("\n");
   if List.length (get_active_players after_subgame_st) < 2 
   then finish_game after_subgame_st 
