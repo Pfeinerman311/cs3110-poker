@@ -127,7 +127,7 @@ module Make = functor (I : BotInfo) -> struct
       another pair if we already have one. 
 
       these are the numbers computed for when snd x = 1 and snd x = 2.*)
-  let twopair_helper cards =
+  let two_pair_helper cards =
     let ranks = get_ranks cards in
     let rank_freq = to_rank_acoss ranks [] None in
     let temp_outs = {hand_type=Two_Pair;
@@ -276,7 +276,7 @@ module Make = functor (I : BotInfo) -> struct
     in
     List.fold_left update_outs temp_outs rank_freq
 
-  let straightflush_helper cards = 
+  let straight_flush_helper cards = 
     let rec helper checking ranks acc = 
       let missing = cards_missing checking ranks in
       let new_outs = 
@@ -348,7 +348,7 @@ module Make = functor (I : BotInfo) -> struct
     | Royal_Flush -> ([(royal_helper cards)]@acc)
     | Straight_Flush -> 
       generate_outs_list_helper (inc_hand curr) cards 
-        ([(straightflush_helper cards)]@acc)
+        ([(straight_flush_helper cards)]@acc)
     | Four_Kind -> 
       generate_outs_list_helper (inc_hand curr) cards 
         ([(four_helper cards)]@acc)
@@ -366,7 +366,7 @@ module Make = functor (I : BotInfo) -> struct
         ([(three_helper cards)]@acc)
     | Two_Pair -> 
       generate_outs_list_helper (inc_hand curr) cards 
-        ([(twopair_helper cards)]@acc)
+        ([(two_pair_helper cards)]@acc)
     | Pair ->  
       generate_outs_list_helper (inc_hand curr) cards 
         ([(pair_helper cards)]@acc)
