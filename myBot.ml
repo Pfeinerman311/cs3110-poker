@@ -26,6 +26,10 @@ module Make = functor (I : BotInfo) -> struct
     in 
     helper 1.0 1.0
 
+  (** Takes a hand and returns the lowest better hand. 
+      Example: inc_hand pair -> two pair since two pair is the next hand
+      fails if you try to call it on royal flush since there is no better hand
+  *)
   let inc_hand h = 
     match h with 
     | Royal_Flush-> failwith "inc_hand should not be called on royal flush"
@@ -332,6 +336,9 @@ module Make = functor (I : BotInfo) -> struct
     List.fold_left (fun outs ranks -> helper straight ranks outs) 
       temp_outs [hearts;spades;clubs;diamonds]
 
+  (** Go through each possible hand and figure out how many ways this hand
+      can be obtained. How many combinations of 1, 2, 3, or 4 cards allow you to
+      reach a certain hand *)
   let rec generate_outs_list_helper curr cards acc = 
     match curr with 
     | Royal_Flush -> ([(royal_helper cards)]@acc)
@@ -438,6 +445,9 @@ module Make = functor (I : BotInfo) -> struct
     | Pair -> 0.174
     | High_Card -> 0.0 
 
+  (** calculate probability of winning by going through each possible hand
+      seeing how likely you are to have it and then combining it with
+      how likely that hand is to win *)
   let calculate_prob_of_winning best_hand out_probs = 
     let helper acc x = 
       if x.hand_type = best_hand then acc +. (average_winning_prob x.hand_type)
@@ -445,6 +455,8 @@ module Make = functor (I : BotInfo) -> struct
     in 
     List.fold_left helper 0.0 out_probs
 
+  (** Simple bet formulation strategy, if the expected value of calling is
+      positive then call. Else, fold.  *)
   let formulate_bet prob state player : Command.t = 
     let pot = State.get_pot state in 
     let call_cost = State.get_call_cost state in 
