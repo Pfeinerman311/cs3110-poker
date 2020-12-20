@@ -97,7 +97,9 @@ let pay_ante state =
          else player) 
       state.players
   in
-  {state with players = updated_player_list}
+  {state with players = updated_player_list;
+              pot = state.pot + (List.length (get_active_players state)) 
+                                * 2 * state.blind_amount}
 
 let pay_big_blind state =
   let big_blind = get_big_blind state in
@@ -109,7 +111,8 @@ let pay_big_blind state =
          else player) 
       state.players
   in
-  {state with players = updated_player_list}
+  {state with players = updated_player_list;
+              pot = state.pot + 2*state.blind_amount}
 
 let pay_small_blind state =
   let small_blind = get_small_blind state in
@@ -121,7 +124,8 @@ let pay_small_blind state =
          else player) 
       state.players
   in
-  {state with players = updated_player_list}
+  {state with players = updated_player_list;
+              pot = state.pot + state.blind_amount}
 
 let get_deck state =
   state.deck
@@ -206,7 +210,7 @@ let deal state =
   let rev_player = List.rev state.players in
   let deck, players = deal_helper rev_player state.deck [] in
   {state with players= players; deck=deck; community_cards=[];
-              call_cost=state.blind_amount;}
+              call_cost=0;}
 
 let flop state = 
   let flop_cards, remaining_deck = first_n state.deck 3 in
@@ -256,6 +260,7 @@ let end_subgame state =
                 call_cost=0; 
                 deck=Poker.get_shuffled_deck ();
                 big_blind = get_next_player state.big_blind state.players;
+                small_blind = get_next_player state.small_blind state.players;
     }
   in 
   if List.length new_players != 2 then new_state
