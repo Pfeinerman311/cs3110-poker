@@ -384,9 +384,8 @@ let rec prompt_user_command (st : State.t) : State.t =
   )
 
 let rec game_flow (st : State.t) : unit =
-  let init_st = st in
-  let deal_st = init_st |> pay_ante |> pay_big_blind |> pay_small_blind 
-                |> prompt_user_command in
+  let init_st = st |> pay_big_blind |> pay_small_blind |> pay_ante in
+  let deal_st = prompt_user_command init_st in
   let flop_st = prompt_user_command deal_st in
   let turn_st = prompt_user_command flop_st in
   let river_st = prompt_user_command turn_st in
