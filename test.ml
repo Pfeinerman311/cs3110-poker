@@ -21,6 +21,25 @@ open Bot
     methods work keeping in mind what edge cases are as per our algorithm 
     design. This mixture will also ensure a sort of modularity that you get
     with glassbox testing. 
+
+    We are quite confident that the combination of our integration testing (aka
+    testing by just playing the game) as well as our unit tests will be able to 
+    convince us that our system is working as intended. The reason for this is
+    that when testing manually, it is very obvious when things do not work. For
+    instance, we would be able to tell that the bot is not working if it started
+    acting very unexpectedly (such as folding always, for example). Since we
+    print out so much information as part of the UI, we can also see if things
+    are working. An example is that if our function for folding players was 
+    broken, we would be able to see that in our UI because the player would
+    still be active and betting. As for the unit tests, these will help us to be
+    confident in the more subtle aspects of code. For example, we have some
+    helper functions in our code that operate on lists. Since we can test these
+    we are confident that if something were to be wrong with our system, it
+    would not be from these parts. The same is true for our command parsing. 
+    Basically, since we can be confident from our unit tests that the building
+    blocks of our code are sound, and we can be confident from our manual 
+    integration testing that the larger system works, we can be confident that
+    the whole thing works. 
 *)
 
 
@@ -239,6 +258,33 @@ let make_player cards =
    stack = 0;
    hole_cards = cards}
 
+let test_sublist 
+    (name : string)
+    (list : 'a list)
+    (n : int)
+    (expected : 'a list)
+    (fails : bool): test = 
+  name >:: (fun _ ->
+      try
+        assert_equal ~printer:(pp_list pp_string) ~cmp:cmp_set_like_lists
+          expected (sub_list list n []) 
+      with
+      | _ -> assert_bool "sublist failed but shouldn't have" fails)
+
+let test_same_rank
+    (name : string)
+    (card1 : card)
+    (card2 : card)
+    (expected : bool) = 
+  name >:: (fun _ ->
+      assert_equal ~printer:string_of_bool 
+        expected (same_rank card1 card2))
+
+let a_clubs =  (Ace, Clubs)
+let a_diamonds = (Ace, Diamonds)
+let j_clubs = (Jack, Clubs)
+let j_spades = (Jack, Spades)
+let three_spades = (Three, Spades)
 
 let poker_tests = 
   [
@@ -252,6 +298,18 @@ let poker_tests =
     best_hand_test "Parker four of a kind test" (make_player hl_7) c2 h7;
     best_hand_test "Parker straight flush test" (make_player hl_8) c3 h8;
     best_hand_test "Parker royal flush test" (make_player hl_9) c4 h9;
+    test_sublist "Test sublist basic case" 
+      ["apple";"orange";"pear";] 2 ["apple";"orange"] false;
+    test_sublist "test sublist fails case"
+      ["apple";"orange";"pear";] 5 [] true;
+    test_sublist "Test sublist empty case"
+      ["apple";"orange";"pear";] 0 [] false;
+    test_sublist "Test sublist empty case 2 "
+      [] 0 [] false;
+    test_sublist "test sublist fails empty list case" [] 2 [] true;
+    test_same_rank "test same rank base case" a_clubs a_diamonds true;
+    test_same_rank "test same rank base case" j_clubs j_spades true;
+    test_same_rank "test same rank different case" j_clubs a_clubs false;
   ]
 
 let test_parse_command 
@@ -324,16 +382,6 @@ let test_state_end_subgame
         expected_winner_stack actual_stack) 
 
 
-let rec first_n_helper list counter stop acc = 
-  match list with
-  | [] -> acc,list
-  | h::t -> if counter = stop then acc,list 
-    else first_n_helper t (counter+1) stop (acc@[h])
-
-
-let first_n list n = 
-  first_n_helper list 0 n []
-
 let test_first_n 
     (name : string)
     (list)
@@ -352,6 +400,8 @@ let state_tests = [
   test_state_end_subgame "simple test of end subgame" pre_end_state alice 150;
   test_first_n "test right number" [1;2;3;4;5;6;7;8] 4;
   test_first_n "test right number, entire list." [1;2;3;4] 4;
+  test_first_n "test empty list" [] 0;
+  test_first_n "test zero first list" [1;2;4;5] 0;
 ]
 
 let ex_st =
