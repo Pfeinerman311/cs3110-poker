@@ -147,7 +147,7 @@ let rec print_winners (winners : (Poker.player * Poker.hand) list) : unit =
   | (player, hand) :: t -> 
     let name = Poker.get_name player in
     let hand = hand_to_string hand in
-    let msg = "\n - " ^ name ^ " with hand: " ^ hand  ^ "\n" in
+    let msg = "\n\n - " ^ name ^ " with hand: " ^ hand  ^ "\n" in
     ANSITerminal.(print_string [Bold; blue] msg); 
     print_winners t
 
@@ -158,6 +158,12 @@ let rec print_winners (winners : (Poker.player * Poker.hand) list) : unit =
 let transition (st : State.t) (trans : State.t -> State.t) : State.t =
   let new_stage = incr_stage st in
   trans new_stage
+
+
+let is_playing id st =
+  match find_opt (fun x -> Poker.get_ID x = id) (st |> get_players) with
+  | Some p -> true
+  | None -> false
 
 (* [play_bot_acton st] takes in the command for a bot represented by player [p]
    and returns [st], the state after the command is performed on the game. *)
@@ -170,7 +176,7 @@ let play_bot_action
     begin match State.raise st p i with
       | Legal new_st -> 
         print_ansi 
-          ("\n\n " ^ (Poker.get_name p) ^ " has chosen to raise \n") "green"; 
+          ("\n " ^ (Poker.get_name p) ^ " has chosen to raise \n") "green"; 
         new_st
       | Illegal -> failwith "Bot cannot call"
     end
@@ -178,17 +184,17 @@ let play_bot_action
     begin match State.call st p with
       | Legal new_st -> 
         print_ansi 
-          ("\n\n " ^ (Poker.get_name p) ^ " has chosen to call\n") "green"; 
+          ("\n " ^ (Poker.get_name p) ^ " has chosen to call\n") "green"; 
         new_st
       | Illegal -> failwith "Bot cannot call"
     end
   | Fold -> begin 
       let new_st = State.fold st p in
       print_ansi 
-        ("\n\n " ^ (Poker.get_name p) ^ " has chosen to fold\n") "green"; 
+        ("\n " ^ (Poker.get_name p) ^ " has chosen to fold\n") "green"; 
       new_st
     end
-  | _ -> failwith "unimplemented"
+  | _ -> failwith "Bot command not supported"
 
 (* [play_bots st] plays the commands for the bots in a round where only the
    user (aka player 1) has had their action processed. The idea here is to use 
@@ -253,7 +259,7 @@ let print_opts (opts : string list) : unit =
     ANSITerminal.(print_string [Bold] (nth opts i) );
     print_string (": " ^ opt_descriptions (nth opts i) ^ "\n");
   done;
-  print_string "  ——————————————��———————————————————————————\n";
+  print_string "  —————————————————————————————————————————\n";
   print_string "\n"
 
 let print_opts_short (opts) : unit =
