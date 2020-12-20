@@ -17,7 +17,10 @@ open Bot
     it deals with outputing things to the user and taking in input. 
 
     For the OUnit tests we are able to write, we plan on using a mixture of 
-    glass box and black box testing. This will allow us to ensure 
+    glass box and black box testing. This will allow us to ensure that our 
+    methods work keeping in mind what edge cases are as per our algorithm 
+    design. This mixture will also ensure a sort of modularity that you get
+    with glassbox testing. 
 *)
 
 
@@ -251,9 +254,32 @@ let poker_tests =
     best_hand_test "Parker royal flush test" (make_player hl_9) c4 h9;
   ]
 
+let test_parse_command 
+    (name : string)
+    (input : string)
+    expected =
+  name >:: (fun _ -> 
+      let opt = 
+        match (Command.parse input) with
+        | exception Malformed -> None
+        | cmd -> (Some cmd)
+      in
+      assert_equal expected opt  )
+
 let command_tests = 
   [
-
+    test_parse_command "Test parse go" "go" (Some Start);
+    test_parse_command "Test parse hand" "hand" (Some Hand);
+    test_parse_command "Test parse call" "call" (Some Call);
+    test_parse_command "Test parse fold" "leave" (Some Quit);
+    test_parse_command "Test parse raise" "raise 40" (Some (Raise 40));
+    test_parse_command "Test parse raise malform" "raise" (None);
+    test_parse_command "Test parse raise malform not int" 
+      "raise lambda" (None);
+    test_parse_command "Test parse help" "help" (Some Help);
+    test_parse_command "Test parse extra spaces" "  go  " (Some Start);
+    test_parse_command "Test parse malformed" "gimme money" None;
+    test_parse_command "Test parse malformed" "123 go" None;
   ]
 
 let community_cards_string (st : State.t) : string =

@@ -28,6 +28,9 @@ let parse (str : string) : t =
   | "call" :: [] -> Call
   | "fold" :: [] -> Fold
   | "leave" :: [] -> Quit
-  | "raise" :: num :: [] -> Raise (int_of_string num)
+  | "raise" :: num :: [] -> begin match int_of_string_opt num with
+      | Some i -> Raise i 
+      | None -> raise Malformed
+    end
   | "help" :: [] -> Help
   | _ -> raise Malformed
