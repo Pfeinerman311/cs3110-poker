@@ -33,7 +33,7 @@ type result = Legal of t | Illegal
 let get_next_player player players = 
   let rec helper lst next = 
     match lst with
-    | [] -> if next then player else failwith "player not in players"
+    | [] -> if next then List.hd players else failwith "player not in players"
     | h::t -> if next then h else 
       if Poker.get_ID h = Poker.get_ID player then helper t true 
       else helper t false 

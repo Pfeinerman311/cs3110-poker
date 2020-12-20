@@ -351,6 +351,10 @@ let alice = {name = "Alice"; id = 1; active = true; stack = 100;
              hole_cards = [(Ace, Clubs); (Ace, Diamonds);]}
 let bob = {name = "Bob"; id = 2; active = true; stack = 100; 
            hole_cards = [(Queen, Clubs); (Queen, Diamonds)]}
+let charlie = {name = "Charlie"; id = 3; active = true; stack = 100; 
+               hole_cards = [(Queen, Clubs); (Queen, Diamonds)]}
+let debby = {name = "Debby"; id = 4; active = true; stack = 100; 
+             hole_cards = [(Queen, Clubs); (Queen, Diamonds)]}
 
 let pre_end_state = 
   let init =  match init_state [alice;bob] 0 with
@@ -387,6 +391,17 @@ let test_first_n
       assert_equal ~printer:string_of_int
         n (List.length first)) 
 
+let test_get_next_player
+    (name : string)
+    (list)
+    (player : player)
+    (expected : player) = 
+  name >:: (fun _ ->
+      assert_equal 
+        expected (get_next_player player list)  )
+
+let next_player_players = [alice;bob;charlie;debby]
+
 let state_tests = [
   pot_test "simple pot increase test with a player raising" players 350;
   deal_test "check 2 players are dealt cards" players;
@@ -398,6 +413,15 @@ let state_tests = [
   test_first_n "test right number, entire list." [1;2;3;4] 4;
   test_first_n "test empty list" [] 0;
   test_first_n "test zero first list" [1;2;4;5] 0;
+  test_get_next_player "basic test for get next player" next_player_players
+    alice bob;
+  test_get_next_player "basic test for get next player" next_player_players
+    bob charlie;
+  test_get_next_player "basic test for get next player" next_player_players
+    charlie debby;
+  test_get_next_player "get next player test, end of list" next_player_players
+    debby alice;
+
 ]
 
 let ex_st =
