@@ -5,7 +5,20 @@ open State
 open Bot
 
 (** TESTING METHODOLOGY *)
+(*******************************************************************
+    For our testing we plan to test as much as we can with OUnit and the rest
+    manually using our Make Play feature. As it happens, a lot of our features
+    are interdependent and thus are difficult to test independently. However,
+    we can test many of the state transition functions of [State.ml] 
+    as well as the functions of [Poker.ml]. Since the bots only have the
+    functions [get_action] exposed most of their testing will be using make play
+    However, some basic tests will be implemented in OUnit. Pretty much all of
+    the functionality in [main.ml] is impossible to write ounit tests for since
+    it deals with outputing things to the user and taking in input. 
 
+    For the OUnit tests we are able to write, we plan on using a mixture of 
+    glass box and black box testing. This will allow us to ensure 
+*)
 
 
 
@@ -340,7 +353,8 @@ let community_card_test
     (st : State.t)
     (expected_output : string)
   : test =
-  name >:: (fun _ -> assert_equal expected_output (community_cards_string st) ~printer: pp_string) 
+  name >:: (fun _ -> assert_equal expected_output (community_cards_string st) 
+               ~printer: pp_string) 
 
 let main_tests = [
   community_card_test "In Init stage community cards should not be dealt" 
