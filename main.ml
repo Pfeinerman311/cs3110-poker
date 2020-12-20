@@ -167,8 +167,6 @@ let play_bot_action
     (st : State.t) 
     (p : Poker.player)
   : State.t =
-  print_string (string_of_int (st |> current_player |> get_ID));
-  print_string ( (st |> current_player |> Poker.get_name));
   match MyTestBot.get_action st p with
   | Call ->
     begin match State.call st p with
@@ -267,7 +265,7 @@ let rec play_command (st : State.t) (cmd : Command.command) : State.t =
     | Turn -> river
     | River -> deal
   in
-  let user = st |> get_players |> get_next_player (current_player st) in
+  let user = get_player_by_id st 0 in
   match cmd with
   | Start -> play_round st to_next_stage
   | Hand -> 

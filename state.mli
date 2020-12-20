@@ -39,6 +39,9 @@ val get_active_players : t -> Poker.player list
 (** [get_big_blind t] returns the player who currently has the big blind *)
 val get_big_blind : t -> Poker.player
 
+(** [get_big_blind t id] returns the player with id [id] *)
+val get_player_by_id : t -> int -> Poker.player
+
 (** [get_community_cards t] returns a list containing the community cards.
     'community cards' refers to the cards on the table not in players hands
     i.e. the cards from the flop turn and river*)

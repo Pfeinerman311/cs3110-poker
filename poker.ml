@@ -64,7 +64,7 @@ let rec last_card cards =
 let rec sub_list list n sub =
   if n = 0 then sub else
     match list with
-    | [] -> failwith "List isn't big enough."
+    | [] -> sub
     | h::t -> sub_list t (n-1) (h::sub)
 
 let rank_to_int rank =

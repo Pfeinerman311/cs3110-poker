@@ -115,6 +115,9 @@ let incr_stage state =
   in
   {state with game_stage = new_stage}
 
+let get_player_by_id state id = 
+  List.find (fun x -> Poker.get_ID x = id) state.players
+
 let raise state player amount = 
   if amount + state.call_cost > Poker.get_stack player || amount < 0 
   then Illegal
@@ -195,7 +198,7 @@ let get_winners state =
     in
     (x, (Poker.get_best_hand x potential_cards)) 
   in
-  let best_hands_1 = List.map player_to_tup state.players in
+  let best_hands_1 = List.map player_to_tup (get_active_players state) in
   let best_hands = 
     List.filter (fun x -> Poker.is_active (fst x)) best_hands_1 in
   let sorted_hands = 
