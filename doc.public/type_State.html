@@ -1,0 +1,51 @@
+<html><head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="Start" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Poker" rel="Chapter" href="Poker.html">
+<link title="Command" rel="Chapter" href="Command.html">
+<link title="State" rel="Chapter" href="State.html">
+<link title="Main" rel="Chapter" href="Main.html">
+<link title="Author" rel="Chapter" href="Author.html">
+<link title="Bot" rel="Chapter" href="Bot.html">
+<link title="TestBot" rel="Chapter" href="TestBot.html">
+<link title="MyBot" rel="Chapter" href="MyBot.html"><title>State</title>
+</head>
+<body>
+<code class="code"><span class="keyword">sig</span><br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;stage&nbsp;=&nbsp;<span class="constructor">Init</span>&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Deal</span>&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Flop</span>&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Turn</span>&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">River</span><br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;result&nbsp;=&nbsp;<span class="constructor">Legal</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="constructor">State</span>.t&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Illegal</span><br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;init_state&nbsp;:&nbsp;<span class="constructor">Poker</span>.player&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">State</span>.result<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_subgame&nbsp;:&nbsp;<span class="constructor">State</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_stage&nbsp;:&nbsp;<span class="constructor">State</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">State</span>.stage<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_next_player&nbsp;:&nbsp;<span class="constructor">Poker</span>.player&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Poker</span>.player&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Poker</span>.player<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;current_player&nbsp;:&nbsp;<span class="constructor">State</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Poker</span>.player<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_players&nbsp;:&nbsp;<span class="constructor">State</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Poker</span>.player&nbsp;list<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_active_players&nbsp;:&nbsp;<span class="constructor">State</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Poker</span>.player&nbsp;list<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_big_blind&nbsp;:&nbsp;<span class="constructor">State</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Poker</span>.player<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_player_by_id&nbsp;:&nbsp;<span class="constructor">State</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Poker</span>.player<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_community_cards&nbsp;:&nbsp;<span class="constructor">State</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Poker</span>.card&nbsp;list<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_pot&nbsp;:&nbsp;<span class="constructor">State</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_call_cost&nbsp;:&nbsp;<span class="constructor">State</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;pay_big_blind&nbsp;:&nbsp;<span class="constructor">State</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">State</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_deck&nbsp;:&nbsp;<span class="constructor">State</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Poker</span>.card&nbsp;list<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;incr_subgame&nbsp;:&nbsp;<span class="constructor">State</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">State</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;incr_stage&nbsp;:&nbsp;<span class="constructor">State</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">State</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;raise&nbsp;:&nbsp;<span class="constructor">State</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Poker</span>.player&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">State</span>.result<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;call&nbsp;:&nbsp;<span class="constructor">State</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Poker</span>.player&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">State</span>.result<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;fold&nbsp;:&nbsp;<span class="constructor">State</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Poker</span>.player&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">State</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;first_n&nbsp;:&nbsp;<span class="keywordsign">'</span>a&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;list&nbsp;*&nbsp;<span class="keywordsign">'</span>a&nbsp;list<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;deal&nbsp;:&nbsp;<span class="constructor">State</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">State</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;flop&nbsp;:&nbsp;<span class="constructor">State</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">State</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;turn&nbsp;:&nbsp;<span class="constructor">State</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">State</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;river&nbsp;:&nbsp;<span class="constructor">State</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">State</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_winners&nbsp;:&nbsp;<span class="constructor">State</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;(<span class="constructor">Poker</span>.player&nbsp;*&nbsp;<span class="constructor">Poker</span>.hand)&nbsp;list<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;end_subgame&nbsp;:&nbsp;<span class="constructor">State</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">State</span>.t<br>
+<span class="keyword">end</span></code></body></html>

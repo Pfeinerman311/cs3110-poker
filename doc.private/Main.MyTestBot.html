@@ -1,0 +1,152 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Main.TestBotInfo.html">
+<link rel="Up" href="Main.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Poker" rel="Chapter" href="Poker.html">
+<link title="Command" rel="Chapter" href="Command.html">
+<link title="State" rel="Chapter" href="State.html">
+<link title="Main" rel="Chapter" href="Main.html">
+<link title="Author" rel="Chapter" href="Author.html">
+<link title="Bot" rel="Chapter" href="Bot.html">
+<link title="TestBot" rel="Chapter" href="TestBot.html">
+<link title="MyBot" rel="Chapter" href="MyBot.html"><title>Main.MyTestBot</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Main.TestBotInfo.html" title="Main.TestBotInfo">Previous</a>
+&nbsp;<a class="up" href="Main.html" title="Main">Up</a>
+&nbsp;</div>
+<h1>Module <a href="type_Main.MyTestBot.html">Main.MyTestBot</a></h1>
+
+<pre><span id="MODULEMyTestBot"><span class="keyword">module</span> MyTestBot</span>: <code class="type"><a href="MyBot.Make.html">MyBot.Make</a></code><code class="code">(</code><code class="type"><a href="Main.TestBotInfo.html">TestBotInfo</a></code><code class="code">)</code></pre><hr width="100%">
+
+<pre><span id="MODULEInfo"><span class="keyword">module</span> <a href="MyBot.Make.Info.html">Info</a></span>: <code class="type">I</code></pre>
+<pre><code><span id="TYPEouts"><span class="keyword">type</span> <code class="type"></code>outs</span> = {</code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTouts.hand_type">hand_type</span>&nbsp;: <code class="type"><a href="Poker.html#TYPEhand_tp">Poker.hand_tp</a></code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTouts.single">single</span>&nbsp;: <code class="type">float</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTouts.double">double</span>&nbsp;: <code class="type">float</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTouts.tripple">tripple</span>&nbsp;: <code class="type">float</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTouts.quad">quad</span>&nbsp;: <code class="type">float</code>;</code></td>
+
+</tr></table>
+<code>}</code>
+
+
+
+<pre><code><span id="TYPEout_prob"><span class="keyword">type</span> <code class="type"></code>out_prob</span> = {</code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTout_prob.hand_type">hand_type</span>&nbsp;: <code class="type"><a href="Poker.html#TYPEhand_tp">Poker.hand_tp</a></code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTout_prob.prob">prob</span>&nbsp;: <code class="type">float</code>;</code></td>
+
+</tr></table>
+<code>}</code>
+
+
+
+<pre><span id="VALchoose"><span class="keyword">val</span> choose</span> : <code class="type">float -> float -> float</code></pre><div class="info ">
+<div class="info-desc">
+<p>Calculates (<code class="code">n</code> choose <code class="code">k</code>)</p>
+</div>
+</div>
+
+<pre><span id="VALinc_hand"><span class="keyword">val</span> inc_hand</span> : <code class="type"><a href="Poker.html#TYPEhand_tp">Poker.hand_tp</a> -> <a href="Poker.html#TYPEhand_tp">Poker.hand_tp</a></code></pre>
+<pre><span id="VALhighcard_helper"><span class="keyword">val</span> highcard_helper</span> : <code class="type"><a href="Poker.html#TYPEcard">Poker.card</a> list -> <a href="MyBot.Make.html#TYPEouts">outs</a></code></pre>
+<pre><span id="VALget_ranks"><span class="keyword">val</span> get_ranks</span> : <code class="type">('a * 'b) list -> 'a list</code></pre>
+<pre><span id="VALto_rank_acoss"><span class="keyword">val</span> to_rank_acoss</span> : <code class="type">'a list -> ('a * int) list -> ('a * int) option -> ('a * int) list</code></pre><div class="info ">
+<div class="info-desc">
+<p>Requires that ranks is sorted</p>
+</div>
+</div>
+
+<pre><span id="VALget_suits"><span class="keyword">val</span> get_suits</span> : <code class="type">('a * 'b) list -> 'b list</code></pre>
+<pre><span id="VALto_suit_acoss"><span class="keyword">val</span> to_suit_acoss</span> : <code class="type">'a list -> ('a * int) list -> ('a * int) option -> ('a * int) list</code></pre><div class="info ">
+<div class="info-desc">
+<p>Requires that ranks is sorted</p>
+</div>
+</div>
+
+<pre><span id="VALpair_helper"><span class="keyword">val</span> pair_helper</span> : <code class="type"><a href="Poker.html#TYPEcard">Poker.card</a> list -> <a href="MyBot.Make.html#TYPEouts">outs</a></code></pre><div class="info ">
+<div class="info-desc">
+<p>Requires that cards is sorted</p>
+</div>
+</div>
+
+<pre><span id="VALtwopair_helper"><span class="keyword">val</span> twopair_helper</span> : <code class="type">('a * 'b) list -> <a href="MyBot.Make.html#TYPEouts">outs</a></code></pre><div class="info ">
+<div class="info-desc">
+<p>to see how many ways we can get a two pair we need to look at
+      the number of ways we can get a matching card and a pair for ranks 
+      we only have one of. We also need to look at how many ways we can get
+      another pair if we already have one.</p>
+
+<p>these are the numbers computed for when snd x = 1 and snd x = 2.</p>
+</div>
+</div>
+
+<pre><span id="VALthree_helper"><span class="keyword">val</span> three_helper</span> : <code class="type">('a * 'b) list -> <a href="MyBot.Make.html#TYPEouts">outs</a></code></pre>
+<pre><span id="VALcards_missing"><span class="keyword">val</span> cards_missing</span> : <code class="type">int list -> int list -> int</code></pre>
+<pre><span id="VALstraight_helper"><span class="keyword">val</span> straight_helper</span> : <code class="type">(<a href="Poker.html#TYPErank">Poker.rank</a> * 'a) list -> <a href="MyBot.Make.html#TYPEouts">outs</a></code></pre>
+<pre><span id="VALflush_helper"><span class="keyword">val</span> flush_helper</span> : <code class="type">('a * 'b) list -> <a href="MyBot.Make.html#TYPEouts">outs</a></code></pre>
+<pre><span id="VALfull_helper"><span class="keyword">val</span> full_helper</span> : <code class="type">('a * 'b) list -> <a href="MyBot.Make.html#TYPEouts">outs</a></code></pre>
+<pre><span id="VALfour_helper"><span class="keyword">val</span> four_helper</span> : <code class="type">('a * 'b) list -> <a href="MyBot.Make.html#TYPEouts">outs</a></code></pre>
+<pre><span id="VALstraightflush_helper"><span class="keyword">val</span> straightflush_helper</span> : <code class="type">(<a href="Poker.html#TYPErank">Poker.rank</a> * <a href="Poker.html#TYPEsuit">Poker.suit</a>) list -> <a href="MyBot.Make.html#TYPEouts">outs</a></code></pre>
+<pre><span id="VALroyal_helper"><span class="keyword">val</span> royal_helper</span> : <code class="type">(<a href="Poker.html#TYPErank">Poker.rank</a> * <a href="Poker.html#TYPEsuit">Poker.suit</a>) list -> <a href="MyBot.Make.html#TYPEouts">outs</a></code></pre>
+<pre><span id="VALgenerate_outs_list_helper"><span class="keyword">val</span> generate_outs_list_helper</span> : <code class="type"><a href="Poker.html#TYPEhand_tp">Poker.hand_tp</a> -><br>       <a href="Poker.html#TYPEcard">Poker.card</a> list -> <a href="MyBot.Make.html#TYPEouts">outs</a> list -> <a href="MyBot.Make.html#TYPEouts">outs</a> list</code></pre>
+<pre><span id="VALgenerate_outs_list"><span class="keyword">val</span> generate_outs_list</span> : <code class="type"><a href="Poker.html#TYPEhand_tp">Poker.hand_tp</a> -> <a href="Poker.html#TYPEcard">Poker.card</a> list -> <a href="MyBot.Make.html#TYPEouts">outs</a> list</code></pre>
+<pre><span id="VALget_outs_list"><span class="keyword">val</span> get_outs_list</span> : <code class="type"><a href="Poker.html#TYPEplayer">Poker.player</a> -> <a href="Poker.html#TYPEhand">Poker.hand</a> -> <a href="Poker.html#TYPEcard">Poker.card</a> list -> <a href="MyBot.Make.html#TYPEouts">outs</a> list</code></pre>
+<pre><span id="VALcalculate_prob_of_drawing_cards"><span class="keyword">val</span> calculate_prob_of_drawing_cards</span> : <code class="type"><a href="MyBot.Make.html#TYPEouts">outs</a> list -> <a href="State.html#TYPEt">State.t</a> -> <a href="MyBot.Make.html#TYPEout_prob">out_prob</a> list</code></pre>
+<pre><span id="VALaverage_winning_prob"><span class="keyword">val</span> average_winning_prob</span> : <code class="type"><a href="Poker.html#TYPEhand_tp">Poker.hand_tp</a> -> float</code></pre><div class="info ">
+<div class="info-desc">
+<p>These probabilities are found on wikipedia:
+      https://en.wikipedia.org/wiki/Poker_probability</p>
+</div>
+</div>
+
+<pre><span id="VALcalculate_prob_of_winning"><span class="keyword">val</span> calculate_prob_of_winning</span> : <code class="type"><a href="Poker.html#TYPEhand_tp">Poker.hand_tp</a> -> <a href="MyBot.Make.html#TYPEout_prob">out_prob</a> list -> float</code></pre>
+<pre><span id="VALformulate_bet"><span class="keyword">val</span> formulate_bet</span> : <code class="type">float -> <a href="State.html#TYPEt">State.t</a> -> <a href="Poker.html#TYPEplayer">Poker.player</a> -> <a href="Command.html#TYPEcommand">Command.command</a></code></pre>
+<pre><span id="VALget_action"><span class="keyword">val</span> get_action</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Poker.html#TYPEplayer">Poker.player</a> -> <a href="Command.html#TYPEcommand">Command.command</a></code></pre></body></html>

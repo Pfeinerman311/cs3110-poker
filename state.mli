@@ -104,11 +104,10 @@ val turn : t -> t
     removed from the deck*)
 val river : t -> t
 
+(** [get_winners t] gets the winners of the current state.  *)
 val get_winners : t -> (Poker.player * Poker.hand) list
 
-(** [end_subgame t} ends current subgame. 
+(** [end_subgame t] ends current subgame. 
     the returned state gives winner(s) the pot and moves blinds. 
-    it also gets a newly shuffled deck and resets the pot and call costs*)
+    it also gets a newly shuffled deck and resets the pot and call costs *)
 val end_subgame : t -> t
-
-val deck_tracker : int -> string list list
