@@ -306,7 +306,7 @@ let rec play_command (st : State.t) (cmd : Command.t) : State.t =
     play_round (fold st user) to_next_stage
   | Raise c -> 
     if (get_stage st = Init) 
-    then (ANSITerminal.(print_string [red] no_cards_msg); st) 
+    then (print_ansi no_cards_msg "red"; st) 
     else 
       begin match raise st user c with
         | Legal new_st -> 
@@ -346,7 +346,7 @@ let rec prompt_user_command_dep (st : State.t) : State.t =
       ^ {|or type "help" for a list of possible commands.|}
       ^ "\n "
     in
-    ANSITerminal.(print_string [green] msg);
+    print_ansi msg "green";
     line_div 87;
     print_string (" > ");
     let input = read_line() in
@@ -371,7 +371,7 @@ let rec prompt_user_command (st : State.t) : Command.t =
       ^ {|or type "help" for a list of possible commands.|}
       ^ "\n "
     in
-    ANSITerminal.(print_string [green] msg);
+    print_ansi msg "green";
     line_div 87;
     print_string (" > ");
     let input = read_line() in
@@ -456,7 +456,7 @@ let rec try_game (input : string) =
 
 (** [main ()] prompts for the game to play, then starts it. *)
 let main () =
-  ANSITerminal.(print_string [green] "\n\n Welcome to 3110 Poker.\n");
+  print_ansi "\n\n Welcome to 3110 Poker.\n" "green";
   let open_msg = 
     " Please enter a number of players [2 - 9]"
     ^ " that you would like at your poker table.\n" 
