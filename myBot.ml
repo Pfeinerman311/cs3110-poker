@@ -445,7 +445,7 @@ module Make = functor (I : BotInfo) -> struct
     in 
     List.fold_left helper 0.0 out_probs
 
-  let formulate_bet prob state player : Command.command = 
+  let formulate_bet prob state player : Command.command= 
     let pot = State.get_pot state in 
     let call_cost = State.get_call_cost state in 
     let stack = Poker.get_stack player in 
@@ -462,7 +462,9 @@ module Make = functor (I : BotInfo) -> struct
     let call_cost = State.get_call_cost s in 
     let stack = Poker.get_stack p in 
     let num_players = List.length (State.get_active_players s) in
-    if num_players = 1 then Call
+    if num_players = 1 then 
+      (** let _ = print_string "last player" in *)
+      Call 
     else
       match stage with 
       | Init -> Call
