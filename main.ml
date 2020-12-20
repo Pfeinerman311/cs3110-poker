@@ -230,7 +230,7 @@ let opt_descriptions (opt : string) : string =
   | "hand" -> " see your best current hand."
   | _ -> ""
 
-let print_opt_info (opts : string list) : unit =
+let print_opts (opts : string list) : unit =
   print_string "  ——————————————————————————————————————————\n";
   for i = 0 to (length opts) - 1 do
     print_string (" | ");
@@ -247,15 +247,6 @@ let get_opts (st : State.t) : string list =
   | Flop -> ["hand"; "check"; "call"; "fold"; "raise"; "leave"]
   | Turn -> ["hand"; "check"; "call"; "fold"; "raise"; "leave"]
   | River -> ["hand"; "check"; "call"; "fold"; "raise"; "leave"]
-
-let print_opts (opts : string list) : unit =
-  print_string "  ——————————————————————————————————————————\n";
-  for i = 0 to (length opts) - 1 do
-    print_string (" | ");
-    print_string(nth opts i)
-  done;
-  print_string "  ——————————————————————————————————————————\n";
-  print_string "\n"
 
 let print_malformed (st : State.t) : unit =
   let 
@@ -276,7 +267,11 @@ let rec play_command (st : State.t) (cmd : Command.command) : State.t =
     | Turn -> river
     | River -> deal
   in
-  let user = st |> get_players |> get_next_player (current_player st) in
+  <<<<<<< HEAD
+let user = st |> get_players |> get_next_player (current_player st) in
+=======
+let user = st |> get_players |> List.hd in
+>>>>>>> ccc60dd7ff03f18191905b5092b0e81ec95f13de
   match cmd with
   | Start -> play_round st to_next_stage
   | Hand -> 
@@ -300,7 +295,7 @@ let rec play_command (st : State.t) (cmd : Command.command) : State.t =
         | Legal new_st -> print_string (" You have chosen to raise " ^ string_of_int c ^ ".\n"); play_round new_st to_next_stage
         | Illegal -> ANSITerminal.(print_string [red] " \nYou are unable to raise this amount.\n\n"); st
       end
-  | Help -> print_opt_info (get_opts st); st
+  | Help -> print_opts (get_opts st); st
   | Quit -> ANSITerminal.(print_string [green] "\n\n Thanks for playing!\n\n"); Stdlib.exit 0
 
 let rec prompt_user_command (st : State.t) : State.t =
@@ -312,7 +307,6 @@ let rec prompt_user_command (st : State.t) : State.t =
     ^ {|or type "help" for a list of possible commands.|}
     ^ "\n "
   in
-  (* print_opts (get_opts st); *)
   ANSITerminal.(print_string [green] msg);
   line_div 87;
   print_string (" > ");
