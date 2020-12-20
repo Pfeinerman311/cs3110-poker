@@ -394,8 +394,8 @@ let rec card_list_to_string_list cards =
 let card_list_to_string cards =
   String.concat ", " (card_list_to_string_list cards)
 
-let rec combos_to_string_list cards_list =
-  match cards_list with
+let rec combos_to_string_list combos =
+  match combos with
   | [] -> []
   | h::t -> [card_list_to_string h]@(combos_to_string_list t)
 
