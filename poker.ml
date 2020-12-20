@@ -1,6 +1,3 @@
-exception UnknownRank
-exception UnknownSuit
-
 type rank = Two | Three | Four | Five | Six | Seven | Eight | Nine
           | Ten | Jack | Queen | King | Ace
 
@@ -264,7 +261,8 @@ and three_kind_check hole full combos =
   | h::t -> {tp = Three_Kind; cards = get_rank_cards full h.rank}
 
 and straight_helper cards n =
-  if List.length cards = 1 && n = 4 then true else
+  if List.length cards = 1 && n = 4 then true 
+  else
     match cards with
     | [] -> failwith "Must be 5 cards."
     | h::t -> let c1 = h in
