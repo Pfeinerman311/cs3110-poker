@@ -19,6 +19,14 @@ val get_subgame : t -> int
 (** [get stage t] returns the current stage of the subgame *)
 val get_stage : t -> stage
 
+
+(** returns the player after [player] in circular-list [players]
+    requires: [player] in [players]
+    Examples:
+     players = [1,3,6] get_next_player 3 players is 6
+     players = [1,3,6] get_next_player 6 players is 1*)
+val get_next_player : Poker.player -> Poker.player
+
 (** [current_player t] returns the player to act*)
 val current_player : t -> Poker.player
 
@@ -74,7 +82,8 @@ val call : t -> Poker.player -> result
     to win the subgame. *)
 val fold : t -> Poker.player -> t
 
-(** [first_n lst n] returns the first n tuple elements in a list *)
+(** [first_n lst n] returns a tuple, the first element is the first n elements
+    of [lst] and the second element is the rest of [lst] *)
 val first_n : 'a list -> int -> 'a list * 'a list
 
 (** [deal t] gives all players two hole cards *)
