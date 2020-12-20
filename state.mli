@@ -74,6 +74,9 @@ val call : t -> Poker.player -> result
     to win the subgame. *)
 val fold : t -> Poker.player -> t
 
+(** [first_n lst n] returns the first n elements in a list *)
+val first_n : 'a list -> int -> 'a list * 'a list
+
 (** [deal t] gives all players two hole cards *)
 val deal : t -> t
 

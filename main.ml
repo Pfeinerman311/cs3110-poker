@@ -17,6 +17,13 @@ let table_names =
    "Hopcroft"
   ]
 
+(* [line_div n] is a function for creating a dividing line that spans a given 
+   number of spaces *)
+let line_div (length : int) : unit =
+  for i = 0 to length - 1 do
+    print_string "—"
+  done;
+  print_string "\n"
 
 module TestBotInfo = struct
   let diff = Test
@@ -28,7 +35,7 @@ module MyTestBot = TestBot.Make(TestBotInfo)
 (* [build_table] creates a list of players with a given stack size (100) for
    simplicity *)
 let build_table (names : string list) (stack_size : int) =
-  match State.init_state (Poker.create_players names 100) 0 with
+  match State.init_state (Poker.create_players (rev names) 100) 0 with
   | Legal t -> t
   | Illegal -> failwith "unable to initialize table"
 
@@ -49,16 +56,13 @@ let get_names (num_players) : string list =
     | 1 -> []
     | num -> get_name num :: add_names (num - 1)
   in
-  username :: List.rev (add_names num_players)
+  username :: add_names num_players
 
 let name_list_generic (num_players : int) : string list =
   let username = print_string(" What's your name?\n\n > "); read_line() in
   let tbl_names = map (fun x -> if (x = username) then "Mimno" else x) table_names in
-  let rec add_names lst = function
-    | 1 -> []
-    | num -> hd lst :: add_names (tl lst) (num - 1)
-  in
-  username :: List.rev (add_names tbl_names num_players)
+  let gen_names = fst (first_n tbl_names (num_players - 1)) in
+  rev (username :: gen_names)
 
 
 (* [print_stage st] prints the stage in which the state of the game [st] is *)
@@ -117,10 +121,10 @@ let print_hole_cards (st : State.t) (color_print : bool) : unit =
    be:
     [ | Player 1-150 | Player 2-150 | Player 3-150 | ] *)
 let rec get_player_stacks (players : Poker.player list) (cp_name: string) (bb_name : string) : string =
-  match players with
+  match rev players with
   | [] -> " |"
   | h :: t ->
-    (" | " ^ Poker.get_name h ^ " — " ^ (string_of_int (get_stack h)) ^ (h |> get_ID |> string_of_int)
+    (" | " ^ Poker.get_name h ^ " — " ^ (string_of_int (get_stack h)) ^ " ID: " ^ (h |> get_ID |> string_of_int)
      (* ^ (if get_name h = cp_name then " (Current Player)" else "") *)
      ^ (if Poker.get_name h = bb_name then " (Big Blind)" else ""))
     ^ get_player_stacks t cp_name bb_name
@@ -244,6 +248,13 @@ let get_opts (st : State.t) : string list =
   | Turn -> ["hand"; "check"; "call"; "fold"; "raise"; "leave"]
   | River -> ["hand"; "check"; "call"; "fold"; "raise"; "leave"]
 
+let print_malformed (st : State.t) : unit =
+  let 
+    msg = "\n This command is not appropriate, please enter one of the commands" 
+          ^ " above or type help.\n"
+  in
+  ANSITerminal.(print_string [red] msg)
+
 (* [play_command st cmd] takes in a commmand [cmd] from the user and uses it to
    pattern match it to a new state which is just a transition function applied
    to the input state [st] *)
@@ -280,19 +291,24 @@ let rec play_command (st : State.t) (cmd : Command.command) : State.t =
         | Legal new_st -> print_string (" You have chosen to raise " ^ string_of_int c ^ ".\n"); play_round new_st to_next_stage
         | Illegal -> ANSITerminal.(print_string [red] " \nYou are unable to raise this amount.\n\n"); st
       end
-  | Help -> failwith ""
+  | Help -> print_opts (get_opts st); st
   | Quit -> ANSITerminal.(print_string [green] "\n\n Thanks for playing!\n\n"); Stdlib.exit 0
 
 let rec prompt_user_command (st : State.t) : State.t =
   (* if (st |> current_player |> get_ID <> 0)
      then play_command st Start *)
   (* else( *)
-  ANSITerminal.(print_string [green] " It's your turn. Please input a command: \n");
-  print_opts (get_opts st);
+  let msg = 
+    " It's your turn. Please input a command, "
+    ^ {|or type "help" for a list of possible commands.|}
+    ^ "\n "
+  in
+  ANSITerminal.(print_string [green] msg);
+  line_div 87;
   print_string (" > ");
   let input = read_line() in
   match parse (opt_to_keyword input) with
-  | exception Malformed -> ANSITerminal.(print_string [red] "\n This command is not appropriate, please enter one of the commands above or type < help >.\n"); prompt_user_command st
+  | exception Malformed -> print_malformed st; prompt_user_command st
   | cmd -> 
     begin match play_command st cmd with
       | same_st when same_st = st -> prompt_user_command same_st
@@ -327,7 +343,7 @@ let rec game_flow (st : State.t) : unit =
 let play_game (num_players : int) : unit =
   let name_list = name_list_generic num_players in
   let init_st = build_table name_list 100 in
-  print_string (List.nth (init_st |> get_players |> List.map (fun x -> Poker.get_name x)) 0);
+  (* print_string (List.nth (init_st |> get_players |> List.map (fun x -> Poker.get_name x)) 0); *)
   print_state init_st;
   game_flow init_st
 
