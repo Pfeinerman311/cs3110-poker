@@ -1,4 +1,4 @@
-MODULES=poker command state main author bot testBot myBot test
+MODULES=poker command state main author bot testBot myBot
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)
