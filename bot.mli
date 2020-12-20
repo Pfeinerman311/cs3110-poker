@@ -1,3 +1,6 @@
+(** A [Bot] takes a game state and produces a command *)
+
+
 (** [difficulty] represents a bot's level of complexity and skill*)
 type difficulty = Test | Easy | Medium | Hard
 

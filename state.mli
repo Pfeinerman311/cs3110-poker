@@ -1,4 +1,4 @@
-(** The module that handles each state and temporary date for a poker game. *)
+(** The module that handles each state and transitions for a poker game. *)
 
 (** [stage] is the abstract type of the stage of the game *)
 type stage = Init | Deal | Flop | Turn | River
