@@ -332,46 +332,44 @@ module Make = functor (I : BotInfo) -> struct
     List.fold_left (fun outs ranks -> helper straight ranks outs) 
       temp_outs [hearts;spades;clubs;diamonds]
 
-  let rec generate_outs_list_helper curr hand cards acc stage = 
+  let rec generate_outs_list_helper curr cards acc = 
     match curr with 
     | Royal_Flush -> ([(royal_helper cards)]@acc)
     | Straight_Flush -> 
-      generate_outs_list_helper (inc_hand curr) hand cards 
-        ([(straightflush_helper cards)]@acc) stage
+      generate_outs_list_helper (inc_hand curr) cards 
+        ([(straightflush_helper cards)]@acc)
     | Four_Kind -> 
-      generate_outs_list_helper (inc_hand curr) hand cards 
-        ([(four_helper cards)]@acc) stage
+      generate_outs_list_helper (inc_hand curr) cards 
+        ([(four_helper cards)]@acc)
     | Full_House -> 
-      generate_outs_list_helper (inc_hand curr) hand cards 
-        ([(full_helper cards)]@acc) stage
+      generate_outs_list_helper (inc_hand curr) cards 
+        ([(full_helper cards)]@acc)
     | Flush -> 
-      generate_outs_list_helper (inc_hand curr) hand cards 
-        ([(flush_helper cards)]@acc) stage
+      generate_outs_list_helper (inc_hand curr) cards 
+        ([(flush_helper cards)]@acc)
     | Straight -> 
-      generate_outs_list_helper (inc_hand curr) hand cards 
-        ([(straight_helper cards)]@acc) stage
+      generate_outs_list_helper (inc_hand curr) cards 
+        ([(straight_helper cards)]@acc)
     | Three_Kind -> 
-      generate_outs_list_helper (inc_hand curr) hand cards 
-        ([(three_helper cards)]@acc) stage
+      generate_outs_list_helper (inc_hand curr) cards 
+        ([(three_helper cards)]@acc)
     | Two_Pair -> 
-      generate_outs_list_helper (inc_hand curr) hand cards 
-        ([(twopair_helper cards)]@acc) stage
+      generate_outs_list_helper (inc_hand curr) cards 
+        ([(twopair_helper cards)]@acc)
     | Pair ->  
-      generate_outs_list_helper (inc_hand curr) hand cards 
-        ([(pair_helper cards)]@acc) stage
+      generate_outs_list_helper (inc_hand curr) cards 
+        ([(pair_helper cards)]@acc)
     | High_Card -> 
-      generate_outs_list_helper (inc_hand curr) hand cards 
-        ([(highcard_helper cards)]@acc) stage
+      generate_outs_list_helper (inc_hand curr) cards 
+        ([(highcard_helper cards)]@acc)
 
-  let generate_outs_list start hand cards stage = 
-    generate_outs_list_helper start cards stage []
+  let generate_outs_list start cards = 
+    generate_outs_list_helper start cards []
 
-  let get_cards_that_improve_hand player com_cards stage = 
-    let best_hand = Poker.get_best_hand player com_cards in 
-    generate_outs_list best_hand.tp best_hand.cards 
+  let get_outs_list player best_hand com_cards = 
+    generate_outs_list best_hand.tp
       (List.concat [player.hole_cards;com_cards] |> 
        List.sort compare |> List.rev )
-      stage
 
   let calculate_prob_of_drawing_cards outs_list state = 
     let stage = State.get_stage state in
@@ -388,7 +386,7 @@ module Make = functor (I : BotInfo) -> struct
 
         the calculations in get_prob are pre-computed by this formula to save
         computation time *)
-    let get_prob out = 
+    let get_prob (out : outs) = 
       let single_prob = 
         match stage with
         | Deal -> 0.1 
@@ -410,25 +408,71 @@ module Make = functor (I : BotInfo) -> struct
         | Turn -> 0.
         | _ -> failwith "this should be unreachable"
       in
-      let quad_prob = 0.0
+      let quad_prob = 
+        match stage with 
+        | Deal -> 1. /. 46060.
+        | Flop -> 0.
+        | Turn -> 0.
+        | _ -> failwith "This should be unreachable"
       in
       {hand_type = out.hand_type;
-       prob = (single_prob+.double_prob+.tripple_prob+.quad_prob)}
+       prob = ((single_prob *. out.single)
+               +.(double_prob *. out.double)
+               +.(tripple_prob *. out.tripple)
+               +.(quad_prob *. out.quad)
+              )}
     in
     List.map get_prob outs_list
 
-  let calculate_probabilities_of_hands_winning hands state = 
-    failwith "Unimplemented"
+  (** These probabilities are found on wikipedia:
+      https://en.wikipedia.org/wiki/Poker_probability  *)
+  let average_winning_prob = function 
+    | Royal_Flush-> 0.999968
+    | Straight_Flush -> 0.999689
+    | Four_Kind -> 0.99801
+    | Full_House -> 0.972
+    | Flush -> 0.9418
+    | Straight -> 0.896
+    | Three_Kind -> 0.847
+    | Two_Pair -> 0.612
+    | Pair -> 0.174
+    | High_Card -> 0.0 
 
-  let get_prob_of_winning hand_probs probs_hands_win = 
-    failwith "Unimplemented"
+  let calculate_prob_of_winning best_hand out_probs = 
+    let helper acc x = 
+      if x.hand_type = best_hand then acc +. (average_winning_prob x.hand_type)
+      else acc +. (average_winning_prob x.hand_type *. x.prob)
+    in 
+    List.fold_left helper 0.0 out_probs
 
-  let formulate_bet prob = 
-    failwith "Unimplemented"
+  let formulate_bet prob state player : Command.command = 
+    let pot = State.get_pot state in 
+    let call_cost = State.get_call_cost state in 
+    let stack = Poker.get_stack player in 
+    if call_cost > stack then Fold 
+    else
+      let expected_value = prob *. (float_of_int pot) 
+                           -. float_of_int call_cost in
+      print_string (string_of_float expected_value);
+      if expected_value >= 0. then Call 
+      else Fold
 
-  let get_action s p = 
-    (** let stage = State.get_stage s in
-        let hand = get_hole_cards in *)
-    (Fold : Command.command)
+  let get_action s p : Command.command = 
+    let stage = State.get_stage s in 
+    let call_cost = State.get_call_cost s in 
+    let stack = Poker.get_stack p in 
+    let num_players = List.length (State.get_active_players s) in
+    if num_players = 1 then Call
+    else
+      match stage with 
+      | Init -> Call
+      | River -> if call_cost > stack then Fold else Call
+      | _ -> 
+        let com_cards = State.get_community_cards s in
+        let best_hand = Poker.get_best_hand p com_cards in 
+        let outs_list = get_outs_list p best_hand com_cards in 
+        let prob_list = calculate_prob_of_drawing_cards outs_list s in 
+        let winning_prob = calculate_prob_of_winning (best_hand.tp) prob_list in 
+        formulate_bet winning_prob s p
 
 end 
