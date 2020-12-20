@@ -356,8 +356,27 @@ end
 
 module MyTestBot = TestBot.Make(TestBotInfo)
 let state = match (init_state players 0) with
-  | Illegal -> failwith("Illegal Raise should be legal")
+  | Illegal -> failwith("Illegal init state should be legal")
   | Legal t -> t 
+
+module MyBot = MyBot.Make(TestBotInfo)
+let mybot_state_good = match (init_state players 10) with
+  | Illegal -> failwith("Illegal init state should be legal")
+  | Legal t -> 
+    t |> incr_stage |> pay_big_blind
+
+
+let bob_bad = {name = "Bob"; id = 2; active = true; stack = 100; 
+               hole_cards = [(Two, Clubs); (Seven, Diamonds)]}
+let bad_players = [alice;bob_bad]
+
+let mybot_state_bad = match (init_state players 10) with
+  | Illegal -> failwith("Illegal init state should be legal")
+  | Legal t -> let st = t |> incr_stage |> pay_big_blind in 
+    match raise st alice 20 with 
+    | Illegal -> failwith("Illegal raise state should be legal")
+    | Legal t -> t
+
 
 let test_testbot  
     (name: string)   
@@ -366,8 +385,26 @@ let test_testbot
       assert_equal bot_command Call
     )
 
+let test_mybot_goodhand
+    (name: string)   
+    (bot_command : command ) : test = 
+  name >:: (fun _ ->
+      assert_equal bot_command Call
+    )
+
+let test_mybot_badhand    
+    (name: string)   
+    (bot_command : command ) : test = 
+  name >:: (fun _ ->
+      assert_equal bot_command Fold
+    )
+
 let bot_tests = [
-  test_testbot "Test fold bot folds" (MyTestBot.get_action state bob)
+  test_testbot "Test that test bot calls" (MyTestBot.get_action state bob);
+  test_mybot_goodhand "test mybot calls with good hand" 
+    (MyBot.get_action mybot_state_good alice);
+  test_mybot_badhand "test mybot folds with bad hand"
+    (MyBot.get_action mybot_state_bad bob_bad);
 ]
 
 let suite =
