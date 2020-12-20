@@ -30,7 +30,7 @@ module TestBotInfo = struct
   let seed = 0
 end
 
-module MyTestBot = TestBot.Make(TestBotInfo)
+module MyTestBot = MyBot.Make(TestBotInfo)
 
 (* [build_table] creates a list of players with a given stack size (100) for
    simplicity *)
@@ -182,9 +182,9 @@ let play_bot_action
       | Legal new_st -> ANSITerminal.(print_string [green] ("\n\n " ^ (Poker.get_name p) ^ " has chosen to call\n")) ; new_st
       | Illegal -> failwith "Bot cannot call"
     end
-  | Fold -> begin match State.call st p with 
-      | Legal new_st -> ANSITerminal.(print_string [green] ("\n\n " ^ (Poker.get_name p) ^ " has chosen to fold\n")) ; new_st
-      | Illegal -> failwith "Bot cannot call"
+  | Fold -> begin 
+      let new_st = State.fold st p in
+      ANSITerminal.(print_string [green] ("\n\n " ^ (Poker.get_name p) ^ " has chosen to fold\n")) ; new_st
     end
   | _ -> failwith "unimplemented"
 
