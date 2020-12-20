@@ -12,6 +12,6 @@ module Make = functor (I : BotInfo) -> struct
   let get_action s p = 
     let open State in
     match State.get_stage s with
-    | River -> (Fold :Command.command)
-    | _ -> (Call : Command.command)
+    | River -> (Fold :Command.t)
+    | _ -> (Call : Command.t)
 end

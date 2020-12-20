@@ -445,7 +445,7 @@ module Make = functor (I : BotInfo) -> struct
     in 
     List.fold_left helper 0.0 out_probs
 
-  let formulate_bet prob state player : Command.command= 
+  let formulate_bet prob state player : Command.t = 
     let pot = State.get_pot state in 
     let call_cost = State.get_call_cost state in 
     let stack = Poker.get_stack player in 
@@ -457,7 +457,7 @@ module Make = functor (I : BotInfo) -> struct
       if expected_value >= 0. then Call 
       else Fold
 
-  let get_action s p : Command.command = 
+  let get_action s p : Command.t = 
     let stage = State.get_stage s in 
     let call_cost = State.get_call_cost s in 
     let stack = Poker.get_stack p in 

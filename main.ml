@@ -272,7 +272,7 @@ let to_next_stage (st : State.t) : (State.t -> State.t) =
 (* [play_command st cmd] takes in a commmand [cmd] from the user and uses it to
    pattern match it to a new state which is just a transition function applied
    to the input state [st] *)
-let rec play_command (st : State.t) (cmd : Command.command) : State.t =
+let rec play_command (st : State.t) (cmd : Command.t) : State.t =
   let user = get_player_by_id st 0 in
   match cmd with
   | Start -> play_round st (to_next_stage st)
@@ -321,7 +321,7 @@ let rec prompt_user_command_dep (st : State.t) : State.t =
       end
   )
 
-let rec prompt_user_command (st : State.t) : Command.command =
+let rec prompt_user_command (st : State.t) : Command.t =
   if (st |> get_active_players |> List.filter (fun x -> get_ID x = 0) |> List.length = 0)
   then Start 
   else(
@@ -339,7 +339,7 @@ let rec prompt_user_command (st : State.t) : Command.command =
     | cmd -> cmd
   )
 
-(* let after_play (st : State.t) (cmd : Command.command) : State.t =
+(* let after_play (st : State.t) (cmd : Command.t) : State.t =
    match play_command st cmd with
    | same_st when same_st = st -> prompt_user_command same_st
    | new_st -> print_state new_st; new_st *)
@@ -373,7 +373,7 @@ and state_after_player (st : State.t) (player: Poker.player) : State.t =
 
 (* [get_command st] returns the commndof the current player in the current 
    state of the game [st] *)
-and get_command (st : State.t) : Command.command =
+and get_command (st : State.t) : Command.t =
   let current = st |> current_player in
   let current_id = current |> get_ID in 
   if current_id = 0 then prompt_user_command st
