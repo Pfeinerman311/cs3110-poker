@@ -44,7 +44,7 @@ let print_ansi s color : unit =
 (* [build_table] creates a list of players with a given stack size (100) for
    simplicity *)
 let build_table (names : string list) (stack_size : int) =
-  match init_state (create_players (names) 100) 0 with
+  match init_state (create_players (names) 100) 1 with
   | Legal t -> t
   | Illegal -> failwith "unable to initialize table"
 
@@ -115,13 +115,15 @@ let rec get_player_stacks
     (players : Poker.player list) 
     (cp_name: string) 
     (bb_name : string) 
+    (sb_name : string)
   : string =
   match players with
   | [] -> " |"
   | h :: t ->
     (" | " ^ Poker.get_name h ^ " — " ^ (string_of_int (get_stack h))
-     ^ (if Poker.get_name h = bb_name then " (Big Blind)" else ""))
-    ^ get_player_stacks t cp_name bb_name
+     ^ (if Poker.get_name h = bb_name then " (Big Blind)" else "")
+     ^ (if Poker.get_name h = sb_name then " (Small Blind)" else ""))
+    ^ get_player_stacks t cp_name bb_name sb_name
 
 (* [print_player_info players] returns information about the players in the 
    game. Specifically it prints a line with name of the active players and 
@@ -134,7 +136,8 @@ let print_player_info (st : State.t) : unit =
   let players = get_active_players st in
   let cp_name = Poker.get_name ((current_player) st) in
   let bb_name = Poker.get_name ((get_big_blind) st) in
-  print_string (get_player_stacks (players) (cp_name) (bb_name))
+  let sb_name = Poker.get_name ((get_small_blind) st) in
+  print_string (get_player_stacks players cp_name bb_name sb_name)
 
 (* [print_winners winners] prints the names of round winners and their winning 
    hands *)
@@ -144,7 +147,7 @@ let rec print_winners (winners : (Poker.player * Poker.hand) list) : unit =
   | (player, hand) :: t -> 
     let name = Poker.get_name player in
     let hand = hand_to_string hand in
-    let msg = "\n - " ^ name ^ " with hand: " ^ hand  ^ "\n" in
+    let msg = "\n\n - " ^ name ^ " with hand: " ^ hand  ^ "\n" in
     ANSITerminal.(print_string [Bold; blue] msg); 
     print_winners t
 
@@ -155,6 +158,12 @@ let rec print_winners (winners : (Poker.player * Poker.hand) list) : unit =
 let transition (st : State.t) (trans : State.t -> State.t) : State.t =
   let new_stage = incr_stage st in
   trans new_stage
+
+
+let is_playing id st =
+  match find_opt (fun x -> Poker.get_ID x = id) (st |> get_players) with
+  | Some p -> true
+  | None -> false
 
 (* [play_bot_acton st] takes in the command for a bot represented by player [p]
    and returns [st], the state after the command is performed on the game. *)
@@ -167,7 +176,7 @@ let play_bot_action
     begin match State.raise st p i with
       | Legal new_st -> 
         print_ansi 
-          ("\n\n " ^ (Poker.get_name p) ^ " has chosen to raise \n") "green"; 
+          ("\n " ^ (Poker.get_name p) ^ " has chosen to raise \n") "green"; 
         new_st
       | Illegal -> failwith "Bot cannot call"
     end
@@ -175,17 +184,17 @@ let play_bot_action
     begin match State.call st p with
       | Legal new_st -> 
         print_ansi 
-          ("\n\n " ^ (Poker.get_name p) ^ " has chosen to call\n") "green"; 
+          ("\n " ^ (Poker.get_name p) ^ " has chosen to call\n") "green"; 
         new_st
       | Illegal -> failwith "Bot cannot call"
     end
   | Fold -> begin 
       let new_st = State.fold st p in
       print_ansi 
-        ("\n\n " ^ (Poker.get_name p) ^ " has chosen to fold\n") "green"; 
+        ("\n " ^ (Poker.get_name p) ^ " has chosen to fold\n") "green"; 
       new_st
     end
-  | _ -> failwith "unimplemented"
+  | _ -> failwith "Bot command not supported"
 
 (* [play_bots st] plays the commands for the bots in a round where only the
    user (aka player 1) has had their action processed. The idea here is to use 
@@ -250,7 +259,7 @@ let print_opts (opts : string list) : unit =
     ANSITerminal.(print_string [Bold] (nth opts i) );
     print_string (": " ^ opt_descriptions (nth opts i) ^ "\n");
   done;
-  print_string "  ——————————————��———————————————————————————\n";
+  print_string "  —————————————————————————————————————————\n";
   print_string "\n"
 
 let print_opts_short (opts) : unit =
@@ -376,7 +385,8 @@ let rec prompt_user_command (st : State.t) : State.t =
 
 let rec game_flow (st : State.t) : unit =
   let init_st = st in
-  let deal_st = prompt_user_command (pay_big_blind init_st) in
+  let deal_st = init_st |> pay_ante |> pay_big_blind |> pay_small_blind 
+                |> prompt_user_command in
   let flop_st = prompt_user_command deal_st in
   let turn_st = prompt_user_command flop_st in
   let river_st = prompt_user_command turn_st in

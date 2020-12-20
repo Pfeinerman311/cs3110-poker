@@ -88,13 +88,24 @@ let get_pot state =
 let get_call_cost state = 
   state.call_cost
 
+let pay_ante state =
+  let updated_player_list = 
+    List.map 
+      (fun player -> 
+         if Poker.is_active player
+         then (Poker.alter_stack player (-2*state.blind_amount)) 
+         else player) 
+      state.players
+  in
+  {state with players = updated_player_list}
+
 let pay_big_blind state =
   let big_blind = get_big_blind state in
   let updated_player_list = 
     List.map 
       (fun player -> 
          if player = big_blind 
-         then (Poker.alter_stack player (2*state.blind_amount)) 
+         then (Poker.alter_stack player (-2*state.blind_amount)) 
          else player) 
       state.players
   in
@@ -106,7 +117,7 @@ let pay_small_blind state =
     List.map 
       (fun player -> 
          if player = small_blind 
-         then (Poker.alter_stack player state.blind_amount) 
+         then (Poker.alter_stack player (-state.blind_amount)) 
          else player) 
       state.players
   in
@@ -132,6 +143,17 @@ let incr_stage state =
 
 let get_player_by_id state id = 
   List.find (fun x -> Poker.get_ID x = id) state.players
+
+let ante state player =
+  if 2 * state.blind_amount >Poker.get_stack player then Illegal
+  else let new_players = List.map (fun x -> 
+      if Poker.get_ID x = Poker.get_ID player then 
+        Poker.alter_stack x (-2 * state.blind_amount)
+      else x) state.players in 
+    Legal {state with players =  new_players; 
+                      pot = state.pot + 2 * state.blind_amount;
+                      call_cost = state.call_cost;
+                      player_to_act=(get_next_player player new_players);}
 
 let raise state player amount = 
   if amount + state.call_cost > Poker.get_stack player || amount < 0 
