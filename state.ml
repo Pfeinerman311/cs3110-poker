@@ -31,14 +31,17 @@ type result = Legal of t | Illegal
      players = [1,3,6] get_next_player 3 players is 6
      players = [1,3,6] get_next_player 6 players is 1*)
 let get_next_player player players = 
-  let rec helper lst next = 
-    match lst with
-    | [] -> if next then List.hd players else failwith "player not in players"
-    | h::t -> if next then h else 
-      if Poker.get_ID h = Poker.get_ID player then helper t true 
-      else helper t false 
-  in
-  helper players false
+  try
+    let rec helper lst next = 
+      match lst with
+      | [] -> if next then List.hd players else failwith "player not in players"
+      | h::t -> if next then h else 
+        if Poker.get_ID h = Poker.get_ID player then helper t true 
+        else helper t false 
+    in
+    helper players false
+  with 
+  | _ -> player
 
 let init_state players blind= 
   if 1< List.length players && List.length players < 10 then
