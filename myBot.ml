@@ -70,6 +70,27 @@ module Make = functor (I : BotInfo) -> struct
           end
       end
 
+  let get_suits cards = 
+    List.map (fun x -> snd x) cards
+
+  (** Requires that ranks is sorted *)
+  let rec to_suit_acoss suits acc current = 
+    match current with 
+    | None ->  begin      
+        match suits with 
+        | [] -> acc
+        | h::t -> to_suit_acoss t acc (Some (h,1))
+      end
+    | Some curr -> begin
+        match suits with 
+        | [] -> acc@[curr]
+        | h::t -> begin 
+            let r,n = curr in
+            if r = h then to_suit_acoss t acc (Some (h,n+1))
+            else to_suit_acoss t (acc@[curr]) (Some (h,1))
+          end
+      end
+
   (** Requires that cards is sorted *)
   let pair_helper (cards: card list) = 
     let ranks = get_ranks cards in
@@ -113,26 +134,133 @@ module Make = functor (I : BotInfo) -> struct
         {state with tripple=state.tripple +. trip}
       else if snd x = 2 then  
         let double = 6. *. float_of_int (13- List.length rank_freq) in
-        let single = 4. *. float_of_int (List.length rank_freq) -. 1 in
-        {state with single=single; double=double}
+        let single = 4. *. float_of_int (List.length rank_freq) -. 1. in
+        {state with single=state.single +. single;double=state.double +. double}
       else state
     in
     List.fold_left update_outs temp_outs rank_freq
 
   let three_helper cards = 
-    failwith "Unimplemented"
+    let ranks = get_ranks cards in
+    let rank_freq = to_rank_acoss ranks [] None in
+    let temp_outs = {hand_type=Three_Kind;
+                     single=0.0;
+                     double=0.0;
+                     tripple=0.0;
+                     quad=0.0} 
+    in
+    let update_outs state x = 
+      if snd x = 1 then 
+        let double = 3.0  in 
+        {state with double=state.double +. double}
+      else if snd x = 2 then  
+        let single = 4. *. float_of_int (List.length rank_freq) -. 1. in
+        {state with single=state.single +. single;}
+      else state
+    in
+    List.fold_left update_outs temp_outs rank_freq
+
+  let cards_missing straight ranks = 
+    List.filter (fun x -> not (List.mem x ranks)) straight |> List.length
 
   let straight_helper cards = 
-    failwith "Unimplemented"
+    let rec helper checking ranks acc = 
+      let missing = cards_missing checking ranks in
+      let new_outs = 
+        match missing with 
+        | 1 -> {acc with single=acc.single +. 4.0 }
+        | 2 -> {acc with double=acc.double +. 16.0 }
+        | 3 -> {acc with tripple=acc.tripple +. 64.0 }
+        | 4 -> {acc with single=acc.quad +. 256.0 }
+        | _ -> acc
+      in
+      if List.hd checking = 10 then new_outs 
+      else helper (List.map (fun x -> x + 1) checking) ranks new_outs
+    in
+    let ranks = get_ranks cards |> List.map rank_to_int in
+    let temp_outs = {hand_type=Straight;
+                     single=0.0;
+                     double=0.0;
+                     tripple=0.0;
+                     quad=0.0} 
+    in
+    let straight = [1;2;3;4;5] in
+    helper straight ranks temp_outs
+
 
   let flush_helper cards = 
-    failwith "Unimplemented"
+    let suits = get_suits cards in 
+    let suit_freq = to_suit_acoss suits [] None in
+    let temp_outs = {hand_type=Flush;
+                     single=0.0;
+                     double=0.0;
+                     tripple=0.0;
+                     quad=0.0} 
+    in
+    let update_outs state x = 
+      if snd x = 1 then 
+        let quad = choose 12. 4. in 
+        {state with quad=state.quad +. quad}
+      else if snd x = 2 then  
+        let trip = choose 11. 3. in 
+        {state with tripple=state.tripple +. trip}
+      else if snd x = 3 then 
+        let doub = choose 10. 2. in
+        {state with double=state.double +. doub}
+      else if snd x = 4 then 
+        let singl = choose 9. 1. in 
+        {state with single=state.single +. singl}
+      else state
+    in
+    List.fold_left update_outs temp_outs suit_freq
+
 
   let full_helper cards = 
-    failwith "Unimplemented"
+    let ranks = get_ranks cards in
+    let rank_freq = to_rank_acoss ranks [] None in
+    let temp_outs = {hand_type=Full_House;
+                     single=0.0;
+                     double=0.0;
+                     tripple=0.0;
+                     quad=0.0} 
+    in
+    let update_outs state x = 
+      if snd x = 1 then
+        let quad = (3.0 *. 12. *. 4.) +. (3.0 *. 12. *. 6.) in 
+        {state with quad=state.quad +. quad}
+      else if snd x = 2 then  
+        let trip = 12. *. 4. in 
+        {state with tripple=state.tripple +. trip}
+      else if snd x = 3 then 
+        let doub = (13. -. float_of_int(List.length rank_freq)) *. 6. in
+        let sing = float_of_int(List.length rank_freq) -. 1. *. 3. in
+        {state with double=state.double +. doub; single=state.single +. sing}
+      else state
+    in
+    List.fold_left update_outs temp_outs rank_freq
 
   let four_helper cards = 
-    failwith "Unimplemented"
+    let ranks = get_ranks cards in
+    let rank_freq = to_rank_acoss ranks [] None in
+    let temp_outs = {hand_type=Four_Kind;
+                     single=0.0;
+                     double=0.0;
+                     tripple=0.0;
+                     quad=0.0} 
+    in
+    let update_outs state x = 
+      if snd x = 1 then 
+        let tripple = 1.0  in 
+        {state with tripple=state.tripple +. tripple}
+      else if snd x = 2 then  
+        let double = 1.0 in
+        {state with double=state.double +. double;}
+      else if snd x = 3 then
+        let single = 1.0 in 
+        {state with single=state.single +. single}
+      else state
+    in
+    List.fold_left update_outs temp_outs rank_freq
 
   let straightflush_helper cards = 
     failwith "Unimplemented"
