@@ -18,6 +18,8 @@ module Make = functor (I : BotInfo) -> struct
     prob: float
   }
 
+  (** BEGIN MISC HELPERS *)
+
   (** Calculates ([n] choose [k]) *)
   let choose n k = 
     let rec helper i acc = 
@@ -25,33 +27,6 @@ module Make = functor (I : BotInfo) -> struct
       else helper (i +. 1.) (acc *.  ( n +. 1. -. i ) /. i) 
     in 
     helper 1.0 1.0
-
-  (** Takes a hand and returns the lowest better hand. 
-      Example: inc_hand pair -> two pair since two pair is the next hand
-      fails if you try to call it on royal flush since there is no better hand
-  *)
-  let inc_hand h = 
-    match h with 
-    | Royal_Flush-> failwith "inc_hand should not be called on royal flush"
-    | Straight_Flush -> Royal_Flush
-    | Four_Kind -> Straight_Flush
-    | Full_House -> Four_Kind
-    | Flush -> Full_House
-    | Straight -> Flush
-    | Three_Kind -> Straight
-    | Two_Pair -> Three_Kind
-    | Pair -> Two_Pair
-    | High_Card -> Pair
-
-  let highcard_helper (cards : card list) = 
-    let high_card = List.hd cards in
-    let rank = Poker.rank_to_int (fst high_card) in 
-    let single_outs = 14.0 -. float_of_int (rank) in 
-    {hand_type=High_Card;
-     single=single_outs;
-     double=0.0;
-     tripple=0.0;
-     quad=0.0}
 
   let get_ranks cards = 
     List.map (fun x -> fst x) cards
@@ -94,6 +69,35 @@ module Make = functor (I : BotInfo) -> struct
             else to_suit_acoss t (acc@[curr]) (Some (h,1))
           end
       end
+
+  (** Takes a hand and returns the lowest better hand. 
+      Example: inc_hand pair -> two pair since two pair is the next hand
+      fails if you try to call it on royal flush since there is no better hand
+  *)
+  let inc_hand h = 
+    match h with 
+    | Royal_Flush-> failwith "inc_hand should not be called on royal flush"
+    | Straight_Flush -> Royal_Flush
+    | Four_Kind -> Straight_Flush
+    | Full_House -> Four_Kind
+    | Flush -> Full_House
+    | Straight -> Flush
+    | Three_Kind -> Straight
+    | Two_Pair -> Three_Kind
+    | Pair -> Two_Pair
+    | High_Card -> Pair
+
+  (** END MISC HELPERS *)
+
+  let highcard_helper (cards : card list) = 
+    let high_card = List.hd cards in
+    let rank = Poker.rank_to_int (fst high_card) in 
+    let single_outs = 14.0 -. float_of_int (rank) in 
+    {hand_type=High_Card;
+     single=single_outs;
+     double=0.0;
+     tripple=0.0;
+     quad=0.0}
 
   (** Requires that cards is sorted *)
   let pair_helper (cards: card list) = 
