@@ -1,3 +1,7 @@
+(** provides functionality for transitioning between game states
+    in a game of virutal poker *)
+
+
 (** The abstract type of the stage of the game *)
 type stage = Init | Deal | Flop | Turn | River
 
