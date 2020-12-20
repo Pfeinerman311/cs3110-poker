@@ -41,6 +41,9 @@ val get_active_players : t -> Poker.player list
 (** [get_big_blind t] returns the player who currently has the big blind *)
 val get_big_blind : t -> Poker.player
 
+(** [get_small_blind t] returns the player who currently has the small blind *)
+val get_small_blind : t -> Poker.player
+
 (** [get_big_blind t id] returns the player with id [id] *)
 val get_player_by_id : t -> int -> Poker.player
 
@@ -57,10 +60,15 @@ val get_pot : t -> int
     the call cost is the price a player must bet to continue playing *)
 val get_call_cost : t -> int
 
-(* [play_blind state] takes the amount of the big blind out of the player who 
+(* [play_big_blind st] takes the amount of the big blind out of the player who 
    has it, and then returns the state of the game in which the player with the
    big blind has payed it. *)
 val pay_big_blind : t -> t
+
+(* [play_small_blind st] takes the amount of the small blind out of the player
+   who has it, and then returns the state of the game in which the player with
+   the small blind has payed it. *)
+val pay_small_blind : t -> t
 
 (** [get_deck] returns all the cards that have not been delt *)
 val get_deck : t -> Poker.card list
