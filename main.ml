@@ -44,7 +44,7 @@ let print_ansi s color : unit =
 (* [build_table] creates a list of players with a given stack size (100) for
    simplicity *)
 let build_table (names : string list) (stack_size : int) =
-  match init_state (create_players (names) 100) 0 with
+  match init_state (create_players (names) 100) 1 with
   | Legal t -> t
   | Illegal -> failwith "unable to initialize table"
 
@@ -115,13 +115,15 @@ let rec get_player_stacks
     (players : Poker.player list) 
     (cp_name: string) 
     (bb_name : string) 
+    (sb_name : string)
   : string =
   match players with
   | [] -> " |"
   | h :: t ->
     (" | " ^ Poker.get_name h ^ " — " ^ (string_of_int (get_stack h))
-     ^ (if Poker.get_name h = bb_name then " (Big Blind)" else ""))
-    ^ get_player_stacks t cp_name bb_name
+     ^ (if Poker.get_name h = bb_name then " (Big Blind)" else "")
+     ^ (if Poker.get_name h = sb_name then " (Small Blind)" else ""))
+    ^ get_player_stacks t cp_name bb_name sb_name
 
 (* [print_player_info players] returns information about the players in the 
    game. Specifically it prints a line with name of the active players and 
@@ -134,7 +136,8 @@ let print_player_info (st : State.t) : unit =
   let players = get_active_players st in
   let cp_name = Poker.get_name ((current_player) st) in
   let bb_name = Poker.get_name ((get_big_blind) st) in
-  print_string (get_player_stacks (players) (cp_name) (bb_name))
+  let sb_name = Poker.get_name ((get_small_blind) st) in
+  print_string (get_player_stacks players cp_name bb_name sb_name)
 
 (* [print_winners winners] prints the names of round winners and their winning 
    hands *)
@@ -368,7 +371,8 @@ let rec prompt_user_command (st : State.t) : State.t =
 
 let rec game_flow (st : State.t) : unit =
   let init_st = st in
-  let deal_st = prompt_user_command (pay_big_blind init_st) in
+  let deal_st = init_st |> pay_ante |> pay_big_blind |> pay_small_blind 
+                |> prompt_user_command in
   let flop_st = prompt_user_command deal_st in
   let turn_st = prompt_user_command flop_st in
   let river_st = prompt_user_command turn_st in

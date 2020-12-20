@@ -60,6 +60,8 @@ val get_pot : t -> int
     the call cost is the price a player must bet to continue playing *)
 val get_call_cost : t -> int
 
+val pay_ante : t -> t
+
 (* [play_big_blind st] takes the amount of the big blind out of the player who 
    has it, and then returns the state of the game in which the player with the
    big blind has payed it. *)
@@ -80,6 +82,8 @@ val incr_subgame : t -> t
     example: if t was in stage Flop, [incr_state t] would return
     {t with stage=Turn} *)
 val incr_stage : t -> t
+
+val ante : t -> Poker.player -> result
 
 (** [raise t p amount] returns legal of t if p has more than amount in stack
     and Illegal otherwise. t is also updated to include new call cost, pot, and 
