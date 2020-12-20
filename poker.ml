@@ -156,7 +156,7 @@ let rec create_player_helper names cur stack acc =
     create_player_helper t (cur+1) stack (new_player::acc)
 
 let create_players names stack =
-  create_player_helper names 0 stack []
+  List.rev (create_player_helper (List.rev names) 0 stack [])
 
 let get_ID p =
   p.id
