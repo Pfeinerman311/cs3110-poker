@@ -25,7 +25,7 @@ val get_stage : t -> stage
     Examples:
      players = [1,3,6] get_next_player 3 players is 6
      players = [1,3,6] get_next_player 6 players is 1*)
-val get_next_player : Poker.player -> Poker.player
+val get_next_player : Poker.player -> Poker.player list -> Poker.player
 
 (** [current_player t] returns the player to act*)
 val current_player : t -> Poker.player
