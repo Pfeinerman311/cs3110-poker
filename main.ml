@@ -4,6 +4,13 @@ open Poker
 open List
 open Command
 
+(* Initializing the module for bot players *)
+module TestBotInfo = struct
+  let diff = Test
+  let seed = 0
+end
+module MyTestBot = MyBot.Make(TestBotInfo)
+
 (* This is a list of predetermined names for input into build_table *)
 let table_names = 
   ["Cesar"; 
@@ -25,14 +32,7 @@ let line_div (length : int) : unit =
   done;
   print_string "\n"
 
-module TestBotInfo = struct
-  let diff = Test
-  let seed = 0
-end
-
-module MyTestBot = MyBot.Make(TestBotInfo)
-
-
+(* [print_ansi s color] prints a string using ANSITerminal *)
 let print_ansi s color : unit =
   match color with
   | "red" -> ANSITerminal.(print_string [red] s)
@@ -48,6 +48,8 @@ let build_table (names : string list) (stack_size : int) =
   | Legal t -> t
   | Illegal -> failwith "unable to initialize table"
 
+(* [name_list_generic num_players] creates a string list with the user's name
+   added to a list of length [num_players] of generic names *)
 let name_list_generic (num_players : int) : string list =
   let username = print_string(" What's your name?\n\n > "); read_line() in
   let tbl_names = 
@@ -78,8 +80,8 @@ let print_pot table : unit =
   let pot = table |> get_pot in
   print_string("\n | Pot: " ^ (string_of_int pot) ^ "\n")
 
-(* [print_community_cards table] prints the community cards for the game at
-   state [table] *)
+(** [print_community_cards st] prints the field community_cards in the state
+    [st] *)
 let print_community_cards (st : State.t) (color_print : bool) : unit =
   let community_cards = 
     st
@@ -104,7 +106,6 @@ let print_hole_cards (st : State.t) (color_print : bool) : unit =
   else
     print_string (" | Cards: " ^ hole_cards ^ "\n")
 
-
 (* [get_player_stacks players] returns a string representation of players' 
    current information.
    For example, information for three players, each with a stack of 150 would 
@@ -118,11 +119,9 @@ let rec get_player_stacks
   match players with
   | [] -> " |"
   | h :: t ->
-    let id = h |> get_ID |> string_of_int in
     (" | " ^ Poker.get_name h ^ " — " ^ (string_of_int (get_stack h))
      ^ (if Poker.get_name h = bb_name then " (Big Blind)" else ""))
     ^ get_player_stacks t cp_name bb_name
-
 
 (* [print_player_info players] returns information about the players in the 
    game. Specifically it prints a line with name of the active players and 
@@ -137,6 +136,8 @@ let print_player_info (st : State.t) : unit =
   let bb_name = Poker.get_name ((get_big_blind) st) in
   print_string (get_player_stacks (players) (cp_name) (bb_name))
 
+(* [print_winners winners] prints the names of round winners and their winning 
+   hands *)
 let rec print_winners (winners : (Poker.player * Poker.hand) list) : unit =
   match winners with
   | [] -> ()
@@ -147,6 +148,10 @@ let rec print_winners (winners : (Poker.player * Poker.hand) list) : unit =
     ANSITerminal.(print_string [Bold; blue] msg); 
     print_winners t
 
+(* [transition st trans] takes in a game state [st] (at whatever point in the 
+    game of poker that it may represent) and applies to it a transition function
+    [trans], which in turn creates a new State.t object with said transition 
+    applied. *)
 let transition (st : State.t) (trans : State.t -> State.t) : State.t =
   let new_stage = incr_stage st in
   trans new_stage
@@ -183,13 +188,11 @@ let play_bot_action
   | _ -> failwith "unimplemented"
 
 (* [play_bots st] plays the commands for the bots in a round where only the
-   user (aka player 1) has had their action processed. 
-
-   The idea here is to use fold_left on the list of players besides the user.
-   As such, when replaced with the types being used here, the type of fold_left
+   user (aka player 1) has had their action processed. The idea here is to use 
+   fold_left on the list of players besides the user. As such, when replaced 
+   with the types being used here, the type of fold_left
    would be:
     (state -> player -> state) -> player list -> state
-
    Therefore, the state of the game [st] must be such that the current player is 
    the second player. This function returns a game state in which the last n - 1 
    players in an n-player table have made a decision.
@@ -200,6 +203,11 @@ let play_bots (st : State.t) : State.t =
   |> tl
   |> fold_left play_bot_action st
 
+(** [play_round st] takes in a state [st] and transition function and returns 
+    the state of the game after said transition is applied. The pattern for each
+    individual round is:
+    i) Apply the transition function (one of "deal," "flop," "turn," "river")
+    ii) Process player_actions of the n-1 "bots." *)
 let play_round (st : State.t) (trans : State.t -> State.t) : State.t =
   let after_bots = if (State.get_stage st = Init) then st else play_bots st in
   let after_trans = transition after_bots trans in
@@ -242,7 +250,7 @@ let print_opts (opts : string list) : unit =
     ANSITerminal.(print_string [Bold] (nth opts i) );
     print_string (": " ^ opt_descriptions (nth opts i) ^ "\n");
   done;
-  print_string "  ——————————————————————————————————————————\n";
+  print_string "  ——————————————��———————————————————————————\n";
   print_string "\n"
 
 let print_opts_short (opts) : unit =
@@ -341,7 +349,7 @@ let print_state (st : State.t) : unit =
   print_hole_cards st false;
   print_opts_short (get_opts st)
 
-let rec prompt_user_command_dep (st : State.t) : State.t =
+let rec prompt_user_command (st : State.t) : State.t =
   if 
     (st 
      |> get_active_players 
@@ -355,80 +363,23 @@ let rec prompt_user_command_dep (st : State.t) : State.t =
       ^ "\n "
     in
     print_ansi msg "green";
-    line_div 87;
-    print_string (" > ");
-    let input = read_line() in
-    match parse (opt_to_keyword input) with
-    | exception Malformed -> print_malformed st; prompt_user_command_dep st
-    | cmd -> begin match play_command st cmd with
-        | same_st when same_st = st -> prompt_user_command_dep same_st
-        | new_st -> print_state new_st; new_st
-      end
-  )
-
-let rec prompt_user_command (st : State.t) : Command.t =
-  if 
-    (st 
-     |> get_active_players 
-     |> List.filter (fun x -> get_ID x = 0) 
-     |> List.length = 0) || (st |> get_active_players  |> List.length = 1)
-  then Start 
-  else (
-    let msg = 
-      " It's your turn. Please input a command, "
-      ^ {|or type "help" for a list of possible commands.|}
-      ^ "\n "
-    in
-    print_ansi msg "green";
-    line_div 87;
+    line_div 80;
     print_string (" > ");
     let input = read_line() in
     match parse (opt_to_keyword input) with
     | exception Malformed -> print_malformed st; prompt_user_command st
-    | cmd -> cmd
+    | cmd -> begin match play_command st cmd with
+        | same_st when same_st = st -> prompt_user_command same_st
+        | new_st -> print_state new_st; new_st
+      end
   )
-
-(* Returns the state of the game after all active players have played *)
-let rec state_after_round (st : State.t) : State.t =
-  st 
-  |> get_active_players
-  |> fold_left 
-    (fun st p -> state_after_player st p)
-    st
-
-and state_after_player (st : State.t) (player: Poker.player) : State.t =
-  (* If id is the last then increment the stage and show winners *)
-  match get_command st with
-  | Raise i -> 
-    begin match raise st player i with
-      | Legal new_st -> state_after_player st player
-      | Illegal -> state_after_player st player
-    end
-  | Start -> st (* doesn't increment the current player *)
-  | Hand -> st (* doesn't increment the current player *)
-  | Call -> 
-    begin match call st player with
-      | Legal new_st -> new_st
-      | Illegal -> st
-    end
-  | Fold -> fold st player
-  | Quit -> Stdlib.exit 0
-  | Help -> print_opts (get_opts st); state_after_player st player
-
-(* [get_command st] returns the commnd of the current player in the current 
-   state of the game [st] *)
-and get_command (st : State.t) : Command.t =
-  let current = st |> current_player in
-  let current_id = current |> get_ID in 
-  if current_id = 0 then prompt_user_command st
-  else MyTestBot.get_action st current
 
 let rec game_flow (st : State.t) : unit =
   let init_st = st in
-  let deal_st = prompt_user_command_dep (pay_big_blind init_st) in
-  let flop_st = prompt_user_command_dep deal_st in
-  let turn_st = prompt_user_command_dep flop_st in
-  let river_st = prompt_user_command_dep turn_st in
+  let deal_st = prompt_user_command (pay_big_blind init_st) in
+  let flop_st = prompt_user_command deal_st in
+  let turn_st = prompt_user_command flop_st in
+  let river_st = prompt_user_command turn_st in
   (* let end_round = prompt_user_command_dep river_st in *)
   let after_subgame_st = (end_subgame river_st) in
   ANSITerminal.(print_string [Bold; blue] " WINNER(S): ");

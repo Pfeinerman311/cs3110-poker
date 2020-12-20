@@ -76,6 +76,9 @@ let get_active_players state =
 let get_big_blind state =
   state.big_blind
 
+let get_small_blind state =
+  state.small_blind
+
 let get_community_cards state = 
   state.community_cards
 
@@ -91,6 +94,18 @@ let pay_big_blind state =
     List.map 
       (fun player -> 
          if player = big_blind 
+         then (Poker.alter_stack player (2*state.blind_amount)) 
+         else player) 
+      state.players
+  in
+  {state with players = updated_player_list}
+
+let pay_small_blind state =
+  let small_blind = get_small_blind state in
+  let updated_player_list = 
+    List.map 
+      (fun player -> 
+         if player = small_blind 
          then (Poker.alter_stack player state.blind_amount) 
          else player) 
       state.players
