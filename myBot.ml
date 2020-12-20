@@ -18,6 +18,8 @@ module Make = functor (I : BotInfo) -> struct
     prob: float
   }
 
+  (** BEGIN MISC HELPERS *)
+
   (** Calculates ([n] choose [k]) *)
   let choose n k = 
     let rec helper i acc = 
@@ -25,29 +27,6 @@ module Make = functor (I : BotInfo) -> struct
       else helper (i +. 1.) (acc *.  ( n +. 1. -. i ) /. i) 
     in 
     helper 1.0 1.0
-
-  let inc_hand h = 
-    match h with 
-    | Royal_Flush-> failwith "inc_hand should not be called on royal flush"
-    | Straight_Flush -> Royal_Flush
-    | Four_Kind -> Straight_Flush
-    | Full_House -> Four_Kind
-    | Flush -> Full_House
-    | Straight -> Flush
-    | Three_Kind -> Straight
-    | Two_Pair -> Three_Kind
-    | Pair -> Two_Pair
-    | High_Card -> Pair
-
-  let highcard_helper (cards : card list) = 
-    let high_card = List.hd cards in
-    let rank = Poker.rank_to_int (fst high_card) in 
-    let single_outs = 14.0 -. float_of_int (rank) in 
-    {hand_type=High_Card;
-     single=single_outs;
-     double=0.0;
-     tripple=0.0;
-     quad=0.0}
 
   let get_ranks cards = 
     List.map (fun x -> fst x) cards
@@ -90,6 +69,35 @@ module Make = functor (I : BotInfo) -> struct
             else to_suit_acoss t (acc@[curr]) (Some (h,1))
           end
       end
+
+  (** Takes a hand and returns the lowest better hand. 
+      Example: inc_hand pair -> two pair since two pair is the next hand
+      fails if you try to call it on royal flush since there is no better hand
+  *)
+  let inc_hand h = 
+    match h with 
+    | Royal_Flush-> failwith "inc_hand should not be called on royal flush"
+    | Straight_Flush -> Royal_Flush
+    | Four_Kind -> Straight_Flush
+    | Full_House -> Four_Kind
+    | Flush -> Full_House
+    | Straight -> Flush
+    | Three_Kind -> Straight
+    | Two_Pair -> Three_Kind
+    | Pair -> Two_Pair
+    | High_Card -> Pair
+
+  (** END MISC HELPERS *)
+
+  let highcard_helper (cards : card list) = 
+    let high_card = List.hd cards in
+    let rank = Poker.rank_to_int (fst high_card) in 
+    let single_outs = 14.0 -. float_of_int (rank) in 
+    {hand_type=High_Card;
+     single=single_outs;
+     double=0.0;
+     tripple=0.0;
+     quad=0.0}
 
   (** Requires that cards is sorted *)
   let pair_helper (cards: card list) = 
@@ -332,6 +340,9 @@ module Make = functor (I : BotInfo) -> struct
     List.fold_left (fun outs ranks -> helper straight ranks outs) 
       temp_outs [hearts;spades;clubs;diamonds]
 
+  (** Go through each possible hand and figure out how many ways this hand
+      can be obtained. How many combinations of 1, 2, 3, or 4 cards allow you to
+      reach a certain hand *)
   let rec generate_outs_list_helper curr cards acc = 
     match curr with 
     | Royal_Flush -> ([(royal_helper cards)]@acc)
@@ -438,6 +449,9 @@ module Make = functor (I : BotInfo) -> struct
     | Pair -> 0.174
     | High_Card -> 0.0 
 
+  (** calculate probability of winning by going through each possible hand
+      seeing how likely you are to have it and then combining it with
+      how likely that hand is to win *)
   let calculate_prob_of_winning best_hand out_probs = 
     let helper acc x = 
       if x.hand_type = best_hand then acc +. (average_winning_prob x.hand_type)
@@ -445,6 +459,8 @@ module Make = functor (I : BotInfo) -> struct
     in 
     List.fold_left helper 0.0 out_probs
 
+  (** Simple bet formulation strategy, if the expected value of calling is
+      positive then call. Else, fold.  *)
   let formulate_bet prob state player : Command.t = 
     let pot = State.get_pot state in 
     let call_cost = State.get_call_cost state in 
