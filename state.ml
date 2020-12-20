@@ -192,11 +192,7 @@ let distribute_pot winners players pot =
              else x) players
 
 let get_winners state = 
-  let player_to_tup x =  
-    let potential_cards = 
-      List.concat [Poker.get_hole_cards x;state.community_cards] 
-    in
-    (x, (Poker.get_best_hand x potential_cards)) 
+  let player_to_tup x = (x, (Poker.get_best_hand x state.community_cards)) 
   in
   let best_hands_1 = List.map player_to_tup (get_active_players state) in
   let best_hands = 

@@ -162,9 +162,10 @@ let rec print_winners (winners : (Poker.player * Poker.hand) list) : unit =
   | [] -> ()
   | (player, hand) :: t -> 
     let name = Poker.get_name player in
-    let hole = card_list_to_string (get_hole_cards player) in
     let hand = hand_to_string hand in
-    ANSITerminal.(print_string [Bold; blue] ("\n - " ^ name ^ " with hand: " ^hand ^ "\n   and hole: " ^ hole ^ " \n")); print_winners t
+    let msg = "\n - " ^ name ^ " with hand: " ^ hand  ^ "\n" in
+    ANSITerminal.(print_string [Bold; blue] msg); 
+    print_winners t
 
 let transition (st : State.t) (trans : State.t -> State.t) : State.t =
   let new_stage = incr_stage st in
@@ -209,7 +210,6 @@ let play_bots (st : State.t) : State.t =
 let play_round (st : State.t) (trans : State.t -> State.t) : State.t =
   let after_bots = if (State.get_stage st = Init) then st else play_bots st in
   let after_trans = transition after_bots trans in
-  print_state after_bots;
   after_trans
 
 (* [finish_game st] is a function that prints the necessary things once a game
@@ -261,21 +261,21 @@ let print_malformed (st : State.t) : unit =
   in
   ANSITerminal.(print_string [red] msg)
 
-let to_next_stage (st : State.t) : (State.t -> State.t) =
-  match get_stage st with
-  | Init -> deal
-  | Deal -> flop
-  | Flop -> turn
-  | Turn -> river
-  | River -> deal
-
 (* [play_command st cmd] takes in a commmand [cmd] from the user and uses it to
    pattern match it to a new state which is just a transition function applied
    to the input state [st] *)
 let rec play_command (st : State.t) (cmd : Command.t) : State.t =
+  let to_next_stage =
+    match get_stage st with
+    | Init -> deal
+    | Deal -> flop
+    | Flop -> turn
+    | Turn -> river
+    | River -> deal
+  in
   let user = get_player_by_id st 0 in
   match cmd with
-  | Start -> play_round st (to_next_stage st)
+  | Start -> play_round st to_next_stage
   | Hand -> 
     if (get_stage st = Init || get_stage st = Deal) 
     then (ANSITerminal.(print_string [red] "\n You have not been dealt any cards yet. Please pick a different option. \n\n"); st)
@@ -285,16 +285,16 @@ let rec play_command (st : State.t) (cmd : Command.t) : State.t =
     then (ANSITerminal.(print_string [red] "\n You have not been dealt any cards yet. Please pick a different option. \n\n"); st) 
     else
       begin match call st user with
-        | Legal new_st -> ANSITerminal.(print_string [green] "\n You have chosen to call.\n\n"); play_round new_st (to_next_stage st)
+        | Legal new_st -> ANSITerminal.(print_string [green] "\n You have chosen to call.\n\n"); play_round new_st to_next_stage
         | Illegal -> ANSITerminal.(print_string [red] " \nYou are unable to call.\n\n"); st
       end
-  | Fold -> print_string " You have chosen to fold\n\n"; play_round (fold st user) (to_next_stage st)
+  | Fold -> print_string " You have chosen to fold\n\n"; play_round (fold st user) to_next_stage
   | Raise c -> 
     if (get_stage st = Init) 
     then (ANSITerminal.(print_string [red] " \nYou have not been dealt any cards yet. Please pick a different option. \n\n"); st) 
     else 
       begin match raise st user c with
-        | Legal new_st -> print_string (" You have chosen to raise " ^ string_of_int c ^ ".\n"); play_round new_st (to_next_stage st)
+        | Legal new_st -> print_string (" You have chosen to raise " ^ string_of_int c ^ ".\n"); play_round new_st to_next_stage 
         | Illegal -> ANSITerminal.(print_string [red] " \nYou are unable to raise this amount.\n\n"); st
       end
   | Help -> print_opts (get_opts st); st

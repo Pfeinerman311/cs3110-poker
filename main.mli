@@ -28,7 +28,7 @@ val transition : State.t -> (State.t -> State.t) -> State.t
     command by applying an action_command (one of "raise," "call," or "fold") to
     the state [st], or alternatively, a show_command (one of "show table," 
     "show hole", "show hand") in order to print information to the user. *)
-val prompt_user_command : State.t -> State.t
+val prompt_user_command : State.t -> Command.t
 
 (** [print_state st] prints information about the current state of the game [st],
     for example, the very first time print_state is called, it should show the
