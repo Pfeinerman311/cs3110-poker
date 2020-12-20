@@ -92,19 +92,60 @@ module Make = functor (I : BotInfo) -> struct
      tripple=0.0;
      quad=0.0}
 
+  let twopair_helper cards = 
+    failwith "Unimplemented"
+
+  let three_helper cards = 
+    failwith "Unimplemented"
+
+  let straight_helper cards = 
+    failwith "Unimplemented"
+
+  let flush_helper cards = 
+    failwith "Unimplemented"
+
+  let full_helper cards = 
+    failwith "Unimplemented"
+
+  let four_helper cards = 
+    failwith "Unimplemented"
+
+  let straightflush_helper cards = 
+    failwith "Unimplemented"
+
+  let royal_helper cards = 
+    failwith "Unimplemented"
+
   let rec generate_outs_list_helper curr hand cards acc stage = 
     match curr with 
-    | Royal_Flush -> failwith ""
-    | Straight_Flush -> failwith ""
-    | Four_Kind -> failwith ""
-    | Full_House -> failwith ""
-    | Flush -> failwith ""
-    | Straight -> failwith ""
-    | Three_Kind -> failwith ""
-    | Two_Pair -> failwith ""
-    | Pair -> failwith ""
+    | Royal_Flush -> ([(royal_helper cards)]@acc)
+    | Straight_Flush -> 
+      generate_outs_list_helper (inc_hand curr) hand cards 
+        ([(straightflush_helper cards)]@acc) stage
+    | Four_Kind -> 
+      generate_outs_list_helper (inc_hand curr) hand cards 
+        ([(four_helper cards)]@acc) stage
+    | Full_House -> 
+      generate_outs_list_helper (inc_hand curr) hand cards 
+        ([(full_helper cards)]@acc) stage
+    | Flush -> 
+      generate_outs_list_helper (inc_hand curr) hand cards 
+        ([(flush_helper cards)]@acc) stage
+    | Straight -> 
+      generate_outs_list_helper (inc_hand curr) hand cards 
+        ([(straight_helper cards)]@acc) stage
+    | Three_Kind -> 
+      generate_outs_list_helper (inc_hand curr) hand cards 
+        ([(three_helper cards)]@acc) stage
+    | Two_Pair -> 
+      generate_outs_list_helper (inc_hand curr) hand cards 
+        ([(twopair_helper cards)]@acc) stage
+    | Pair ->  
+      generate_outs_list_helper (inc_hand curr) hand cards 
+        ([(pair_helper cards)]@acc) stage
     | High_Card -> 
-      generate_outs_list_helper (inc_hand curr) hand cards acc stage
+      generate_outs_list_helper (inc_hand curr) hand cards 
+        ([(highcard_helper cards)]@acc) stage
 
   let generate_outs_list start hand cards stage = 
     generate_outs_list_helper start cards stage []
