@@ -1,12 +1,16 @@
-(** The abstract type of values representing a card *)
+(** The type of playing card ranks. *)
 type rank = Two | Three | Four | Five | Six | Seven | Eight | Nine
           | Ten | Jack | Queen | King | Ace
 
+(** The type of playing card suits. *)
 type suit = Clubs | Diamonds | Hearts | Spades
 
+(** The type of playing cards for use in poker and represented by a
+    rank and suit. *)
 type card = rank * suit
 
-(** The abstract type of values representing a player *)
+(** The type of poker players containing a name, unique id, active flag,
+    stack, and hold cards. *)
 type player = {
   name : string;
   id : int;
@@ -15,18 +19,16 @@ type player = {
   hole_cards: card list
 }
 
+(** The type of all possible poker hands types. *)
 type hand_tp = Royal_Flush | Straight_Flush | Four_Kind | Full_House
              | Flush | Straight | Three_Kind | Two_Pair | Pair
              | High_Card
 
+(** The type representing a poker hand containing a hand type and the 
+    list of cards that make up the hand. *)
 type hand = {
   tp : hand_tp;
   cards : card list;
-}
-
-type rank_tal = {
-  rank : rank;
-  tally : int;
 }
 
 (** [hand_type h] returns the hand type of hand [h]. *)
@@ -128,16 +130,28 @@ val get_hole_cards : player -> card list
     [cards]. *)
 val set_hole_cards : player -> card list -> player
 
+(** [card_combos cards n] returns the list of all possible [n] card
+    combinations of [cards]. *)
 val card_combos : card list -> int -> (card list) list
 
+(** [get_best_hand p comm] returns the best possible hand for player [p]
+    with community cards [comm]. *)
 val get_best_hand : player -> card list -> hand
 
+(** [card_list_to_string_list cards] returns the list of strings of cards in
+    the card list [cards]. *)
 val card_list_to_string_list : card list -> string list
 
+(** [card_list_to_string cards] returns the strings value of the card list
+    [cards]. *)
 val card_list_to_string : card list -> string
 
+(** [combos_to_string_list combos] returns the list of strings of carf lists
+    in the combo list [combos]. *)
 val combos_to_string_list : (card list) list -> string list
 
+(** [tp_to_string tp] returns the string of hand type [tp]. *)
 val tp_to_string : hand_tp -> string
 
+(** [hand_to_string hand] returns the string of hand [hand]. *)
 val hand_to_string : hand -> string
