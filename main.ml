@@ -35,7 +35,7 @@ module MyTestBot = TestBot.Make(TestBotInfo)
 (* [build_table] creates a list of players with a given stack size (100) for
    simplicity *)
 let build_table (names : string list) (stack_size : int) =
-  match State.init_state (Poker.create_players (rev names) 100) 0 with
+  match init_state (create_players (names) 100) 0 with
   | Legal t -> t
   | Illegal -> failwith "unable to initialize table"
 
@@ -62,7 +62,7 @@ let name_list_generic (num_players : int) : string list =
   let username = print_string(" What's your name?\n\n > "); read_line() in
   let tbl_names = map (fun x -> if (x = username) then "Mimno" else x) table_names in
   let gen_names = fst (first_n tbl_names (num_players - 1)) in
-  rev (username :: gen_names)
+  (username :: gen_names)
 
 
 (* [print_stage st] prints the stage in which the state of the game [st] is *)
@@ -121,7 +121,7 @@ let print_hole_cards (st : State.t) (color_print : bool) : unit =
    be:
     [ | Player 1-150 | Player 2-150 | Player 3-150 | ] *)
 let rec get_player_stacks (players : Poker.player list) (cp_name: string) (bb_name : string) : string =
-  match rev players with
+  match players with
   | [] -> " |"
   | h :: t ->
     (" | " ^ Poker.get_name h ^ " — " ^ (string_of_int (get_stack h)) ^ " ID: " ^ (h |> get_ID |> string_of_int)
@@ -141,7 +141,7 @@ let print_player_info (st : State.t) : unit =
   let players = get_active_players st in
   let cp_name = Poker.get_name ((current_player) st) in
   let bb_name = Poker.get_name ((get_big_blind) st) in
-  print_string (get_player_stacks (players) (cp_name) (bb_name))
+  print_string (get_player_stacks (rev players) (cp_name) (bb_name))
 
 
 (* [print_state st] prints information about the state [st], primarily
@@ -276,7 +276,7 @@ let rec play_command (st : State.t) (cmd : Command.command) : State.t =
     | Turn -> river
     | River -> deal
   in
-  let user = st |> get_players |> get_next_player current_player in
+  let user = st |> get_players |> get_next_player (current_player st) in
   match cmd with
   | Start -> play_round st to_next_stage
   | Hand -> 
@@ -305,8 +305,8 @@ let rec play_command (st : State.t) (cmd : Command.command) : State.t =
 
 let rec prompt_user_command (st : State.t) : State.t =
   (* if (st |> current_player |> get_ID <> 0)
-     then play_command st Start *)
-  (* else( *)
+     then play_command st Start 
+     else(  *)
   let msg = 
     " It's your turn. Please input a command, "
     ^ {|or type "help" for a list of possible commands.|}
