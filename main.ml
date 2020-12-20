@@ -295,26 +295,26 @@ let rec play_command (st : State.t) (cmd : Command.command) : State.t =
   | Quit -> ANSITerminal.(print_string [green] "\n\n Thanks for playing!\n\n"); Stdlib.exit 0
 
 let rec prompt_user_command (st : State.t) : State.t =
-  (* if (st |> current_player |> get_ID <> 0)
-     then play_command st Start *)
-  (* else( *)
-  let msg = 
-    " It's your turn. Please input a command, "
-    ^ {|or type "help" for a list of possible commands.|}
-    ^ "\n "
-  in
-  ANSITerminal.(print_string [green] msg);
-  line_div 87;
-  print_string (" > ");
-  let input = read_line() in
-  match parse (opt_to_keyword input) with
-  | exception Malformed -> print_malformed st; prompt_user_command st
-  | cmd -> 
-    begin match play_command st cmd with
-      | same_st when same_st = st -> prompt_user_command same_st
-      | new_st -> print_state new_st; new_st
-    end
-(* ) *)
+  if (st |> get_active_players |> List.filter (fun x -> get_ID x = 0) |> List.length = 0)
+  then play_command st Start 
+  else(
+    let msg = 
+      " It's your turn. Please input a command, "
+      ^ {|or type "help" for a list of possible commands.|}
+      ^ "\n "
+    in
+    ANSITerminal.(print_string [green] msg);
+    line_div 87;
+    print_string (" > ");
+    let input = read_line() in
+    match parse (opt_to_keyword input) with
+    | exception Malformed -> print_malformed st; prompt_user_command st
+    | cmd -> 
+      begin match play_command st cmd with
+        | same_st when same_st = st -> prompt_user_command same_st
+        | new_st -> print_state new_st; new_st
+      end
+  )
 
 let rec print_winners (winners : (Poker.player * Poker.hand) list) : unit =
   match winners with
