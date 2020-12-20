@@ -1,13 +1,17 @@
-(** The abstraction for the main.ml file, which controls the interface of the
-    poker game. *)
+(** The interface of the poker game. *)
 
 (** [print_community_cards st] prints the field community_cards in the state
     [st] *)
 val print_community_cards : State.t -> bool -> unit
 
+
 (** [get_command str] parses a user's input into a Command.command which is then
     processed into a state transition or some response from the interface. *)
-val play_command : State.t -> Command.command -> State.t
+val play_command : State.t -> Command.t -> State.t
+
+(** [get_command str] parses a user's input into a Command.command which is then
+    processed into a state transition or some response from the interface. *)
+val play_command : State.t -> Command.t -> State.t
 
 (** [play_bots st] is a function that processes the actions of the "bots," aka
     the n-1 players at the table that are not the user. This necessarily occurs
