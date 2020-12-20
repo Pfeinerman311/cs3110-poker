@@ -105,10 +105,6 @@ let get_all_hole_cards (st : State.t) : string list =
   |> List.map card_list_to_string
 
 
-(* let 2ptest_st = State. *)
-
-
-
 
 (* [deck_tracker st] returns the first five elements of the deck throughout
    an entire round by creating a State.t object and transitioning through

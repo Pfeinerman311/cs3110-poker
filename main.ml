@@ -166,6 +166,14 @@ let play_bot_action
     (p : Poker.player)
   : State.t =
   match MyTestBot.get_action st p with
+  | Raise i ->
+    begin match State.raise st p i with
+      | Legal new_st -> 
+        print_ansi 
+          ("\n\n " ^ (Poker.get_name p) ^ " has chosen to raise \n") "green"; 
+        new_st
+      | Illegal -> failwith "Bot cannot call"
+    end
   | Call ->
     begin match State.call st p with
       | Legal new_st -> 
@@ -346,10 +354,10 @@ let print_state (st : State.t) : unit =
 
 let rec prompt_user_command (st : State.t) : State.t =
   if 
-    st 
-    |> get_active_players 
-    |> List.filter (fun x -> get_ID x = 0) 
-    |> List.length = 0
+    (st 
+     |> get_active_players 
+     |> List.filter (fun x -> get_ID x = 0) 
+     |> List.length = 0) || (st |> get_active_players  |> List.length = 1)
   then play_command st Start 
   else(
     let msg = 
