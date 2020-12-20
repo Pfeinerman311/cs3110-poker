@@ -453,7 +453,7 @@ module Make = functor (I : BotInfo) -> struct
     else
       let expected_value = prob *. (float_of_int pot) 
                            -. float_of_int call_cost in
-      print_string (string_of_float expected_value);
+      (** print_string (string_of_float expected_value); *)
       if expected_value >= 0. then Call 
       else Fold
 

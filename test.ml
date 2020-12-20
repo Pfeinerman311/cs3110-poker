@@ -380,21 +380,21 @@ let mybot_state_bad = match (init_state players 10) with
 
 let test_testbot  
     (name: string)   
-    (bot_command : command ) : test = 
+    (bot_command : Command.t ) : test = 
   name >:: (fun _ ->
       assert_equal bot_command Call
     )
 
 let test_mybot_goodhand
     (name: string)   
-    (bot_command : command ) : test = 
+    (bot_command : Command.t ) : test = 
   name >:: (fun _ ->
       assert_equal bot_command Call
     )
 
 let test_mybot_badhand    
     (name: string)   
-    (bot_command : command ) : test = 
+    (bot_command : Command.t ) : test = 
   name >:: (fun _ ->
       assert_equal bot_command Fold
     )
