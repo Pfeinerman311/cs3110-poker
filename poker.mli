@@ -1,16 +1,18 @@
-(** The type of playing card ranks. *)
+(** The module that holds all the data types and functions of a poker game. *)
+
+(** [rank] is the type of playing card ranks. *)
 type rank = Two | Three | Four | Five | Six | Seven | Eight | Nine
           | Ten | Jack | Queen | King | Ace
 
-(** The type of playing card suits. *)
+(** [suit] is the type of playing card suits. *)
 type suit = Clubs | Diamonds | Hearts | Spades
 
-(** The type of playing cards for use in poker and represented by a
+(** [card] is the type of playing cards for use in poker and represented by a
     rank and suit. *)
 type card = rank * suit
 
-(** The type of poker players containing a name, unique id, active flag,
-    stack, and hold cards. *)
+(** [player] is the type of poker players containing a name, unique id, active
+    flag, stack, and hold cards. *)
 type player = {
   name : string;
   id : int;
@@ -19,12 +21,12 @@ type player = {
   hole_cards: card list
 }
 
-(** The type of all possible poker hands types. *)
+(** [hand_tp] is the type of all possible poker hands types. *)
 type hand_tp = Royal_Flush | Straight_Flush | Four_Kind | Full_House
              | Flush | Straight | Three_Kind | Two_Pair | Pair
              | High_Card
 
-(** The type representing a poker hand containing a hand type and the 
+(** [hand] is the type representing a poker hand containing a hand type and the 
     list of cards that make up the hand. *)
 type hand = {
   tp : hand_tp;
