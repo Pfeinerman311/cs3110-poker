@@ -80,9 +80,10 @@ val incr_stage : t -> t
     updated players *)
 val raise : t -> Poker.player -> int -> result
 
-(** [call t p] returns legal of t if player p has enough in stack to cover the cost
-    to call. returns Illegal otherwise. if legal, t is updated to reflect new 
-    pot and player stacks. *)
+(** [call t p] returns legal of t if player p has enough in stack to cover the 
+    cost to call. 
+    returns Illegal otherwise. if legal, t is updated to reflect new pot and 
+    player stacks. *)
 val call : t -> Poker.player -> result
 
 (** [fold t p] returns t with p as inactive. inactive players are no longer able
