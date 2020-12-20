@@ -161,7 +161,13 @@ module Make = functor (I : BotInfo) -> struct
     List.fold_left update_outs temp_outs rank_freq
 
   let cards_missing straight ranks = 
-    List.filter (fun x -> not (List.mem x ranks)) straight |> List.length
+    let missing = List.filter (fun x -> not (List.mem x ranks)) straight in 
+    let cards_needed = missing |> List.length in
+    (** This accounts for aces being counted as 1 and 14 *)
+    if List.hd missing = 1 && List.mem 14 ranks 
+    then cards_needed - 1
+    else cards_needed
+
 
   let straight_helper cards = 
     let rec helper checking ranks acc = 
@@ -171,7 +177,7 @@ module Make = functor (I : BotInfo) -> struct
         | 1 -> {acc with single=acc.single +. 4.0 }
         | 2 -> {acc with double=acc.double +. 16.0 }
         | 3 -> {acc with tripple=acc.tripple +. 64.0 }
-        | 4 -> {acc with single=acc.quad +. 256.0 }
+        | 4 -> {acc with quad=acc.quad +. 256.0 }
         | _ -> acc
       in
       if List.hd checking = 10 then new_outs 
@@ -263,10 +269,68 @@ module Make = functor (I : BotInfo) -> struct
     List.fold_left update_outs temp_outs rank_freq
 
   let straightflush_helper cards = 
-    failwith "Unimplemented"
+    let rec helper checking ranks acc = 
+      let missing = cards_missing checking ranks in
+      let new_outs = 
+        match missing with 
+        | 1 -> {acc with single=acc.single +. 1.0 }
+        | 2 -> {acc with double=acc.double +. 1.0 }
+        | 3 -> {acc with tripple=acc.tripple +. 1.0 }
+        | 4 -> {acc with quad=acc.quad +. 1.0 }
+        | _ -> acc
+      in
+      if List.hd checking = 10 then new_outs 
+      else helper (List.map (fun x -> x + 1) checking) ranks new_outs
+    in
+    let hearts = List.filter (fun x -> snd x = Hearts) cards 
+                 |> get_ranks |> List.map rank_to_int in
+    let spades = List.filter (fun x -> snd x = Spades) cards 
+                 |> get_ranks |> List.map rank_to_int in
+    let clubs = List.filter (fun x -> snd x = Clubs) cards 
+                |> get_ranks |> List.map rank_to_int in
+    let diamonds = List.filter (fun x -> snd x = Diamonds) cards 
+                   |> get_ranks |> List.map rank_to_int in
+    let temp_outs = {hand_type=Straight;
+                     single=0.0;
+                     double=0.0;
+                     tripple=0.0;
+                     quad=0.0} 
+    in
+    let straight = [1;2;3;4;5] in
+    List.fold_left (fun outs ranks -> helper straight ranks outs) 
+      temp_outs [hearts;spades;clubs;diamonds]
 
   let royal_helper cards = 
-    failwith "Unimplemented"
+    let rec helper checking ranks acc = 
+      let missing = cards_missing checking ranks in
+      let new_outs = 
+        match missing with 
+        | 1 -> {acc with single=acc.single +. 1.0 }
+        | 2 -> {acc with double=acc.double +. 1.0 }
+        | 3 -> {acc with tripple=acc.tripple +. 1.0 }
+        | 4 -> {acc with quad=acc.quad +. 1.0 }
+        | _ -> acc
+      in
+      if List.hd checking = 10 then new_outs 
+      else helper (List.map (fun x -> x + 1) checking) ranks new_outs
+    in
+    let hearts = List.filter (fun x -> snd x = Hearts) cards 
+                 |> get_ranks |> List.map rank_to_int in
+    let spades = List.filter (fun x -> snd x = Spades) cards 
+                 |> get_ranks |> List.map rank_to_int in
+    let clubs = List.filter (fun x -> snd x = Clubs) cards 
+                |> get_ranks |> List.map rank_to_int in
+    let diamonds = List.filter (fun x -> snd x = Diamonds) cards 
+                   |> get_ranks |> List.map rank_to_int in
+    let temp_outs = {hand_type=Straight;
+                     single=0.0;
+                     double=0.0;
+                     tripple=0.0;
+                     quad=0.0} 
+    in
+    let straight = [10;11;12;13;14] in
+    List.fold_left (fun outs ranks -> helper straight ranks outs) 
+      temp_outs [hearts;spades;clubs;diamonds]
 
   let rec generate_outs_list_helper curr hand cards acc stage = 
     match curr with 
