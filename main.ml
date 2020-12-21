@@ -218,11 +218,13 @@ let play_bot_action
    the second player. This function returns a game state in which the last n - 1 
    players in an n-player table have made a decision.
 *)
-let play_bots (st : State.t) : State.t =
-  st
-  |> get_active_players
-  |> tl
-  |> fold_left play_bot_action st
+let play_bots (st : State.t) n : State.t =
+  if n = 0 then (
+    st
+    |> get_active_players
+    |> tl
+    |> fold_left play_bot_action st)
+  else st
 
 
 
@@ -298,15 +300,15 @@ let print_malformed (st : State.t) : unit =
     individual round is:
     i) Apply the transition function (one of "deal," "flop," "turn," "river")
     ii) Process player_actions of the n-1 "bots." *)
-let rec play_round (st : State.t) (trans : State.t -> State.t) : State.t =
-  let after_bots = if (State.get_stage st = Init) then st else play_bots st in
-  let after_check = raise_check after_bots in
+let rec play_round (st : State.t) (trans : State.t -> State.t) n: State.t =
+  let after_bots = if (State.get_stage st = Init) then st else play_bots st n in
+  let after_check = raise_check after_bots trans n in
   let after_trans = transition after_check trans in
-  print_state after_trans;
+  if n= 0 then print_state after_trans;
   after_trans
 
-and raise_check st =
-  if get_call_cost st = 0 then st
+and raise_check st trans n =
+  if get_call_cost st = 0 || n > 0 then st
   else (
     print_state st;
     prompt_user_command st false)
@@ -333,7 +335,7 @@ and play_command (st : State.t) (cmd : Command.t) : State.t =
   in
   let user = get_player_by_id st 0 in
   match cmd with
-  | Start -> play_round st to_next_stage
+  | Start -> play_round st to_next_stage 0
   | Hand -> 
     if (get_stage st = Init || get_stage st = Deal) 
     then (print_ansi no_cards_msg "red"; st)
@@ -352,16 +354,16 @@ and play_command (st : State.t) (cmd : Command.t) : State.t =
             (print_ansi ("\n You have chosen to call " ^
                          (new_st |> get_call_cost |> string_of_int) ^ 
                          "\n") "green";
-             skip_bots (decr_stage new_st) to_next_stage;)
+             play_round (decr_stage new_st) to_next_stage 1)
           else (print_ansi "\n You have chosen to check\n" "green";
-                play_round new_st to_next_stage)
+                play_round new_st to_next_stage 0)
         | Illegal -> 
           print_ansi (" \n You are unable to call" ^
                       (st |> get_call_cost |> string_of_int) ^ "\n\n") "red"; 
           st
       end
   | Fold -> print_string "\n You have chosen to fold\n\n"; 
-    play_round (fold st user) to_next_stage
+    play_round (fold st user) to_next_stage 1
   | Raise c -> 
     if (get_stage st = Init) 
     then (print_ansi no_cards_msg "red"; st) 
@@ -370,7 +372,8 @@ and play_command (st : State.t) (cmd : Command.t) : State.t =
         | Legal new_st -> 
           print_ansi ("\n You have chosen to raise " ^ string_of_int c ^ "\n") 
             "green";
-          if get_call_cost st = 0 then play_round new_st to_next_stage else (
+          if get_call_cost st = 0 then 
+            play_round (decr_stage new_st) to_next_stage 1 else (
             print_ansi "\n You are not allowed to raise again.\n\n" "red"; 
             st)
         | Illegal -> 
@@ -386,7 +389,7 @@ and prompt_user_command (st : State.t) (same : bool) : State.t =
      |> get_active_players 
      |> List.filter (fun x -> get_ID x = 0) 
      |> List.length = 0) || (st |> get_active_players |> List.length = 1)
-  then play_command st Start 
+  then play_command st Fold
   else (
     print_prompt_line same;
     print_string (" > ");
