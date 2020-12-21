@@ -147,7 +147,6 @@ and full_house_compare h1 h2 =
   | 0 -> two_pair_compare (sub_hand h1 2) (sub_hand h2 2)
   | x -> x
 
-
 let tal_compare t1 t2 =
   (rank_to_int t1.rank) -(rank_to_int t2.rank)
 

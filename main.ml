@@ -106,7 +106,9 @@ let print_hole_cards (st : State.t) (color_print : bool) : unit =
   if color_print then
     print_ansi ("Your hole cards are: " ^ hole_cards ^ "\n\n") "blue"
   else
-    print_string (" | Cards: " ^ hole_cards ^ "\n")
+    print_string (" | ");
+  print_ansi ("Cards: " ^ hole_cards ^ "\n") "cyan"
+(** print_string (" | Cards: " ^ hole_cards ^ "\n") *)
 
 (* [get_player_stacks players] returns a string representation of players' 
    current information.
@@ -361,7 +363,7 @@ let print_state (st : State.t) : unit =
   print_pot st;
   print_community_cards st false;
   print_hole_cards st false;
-  print_opts_short (get_opts st)
+  if (get_stage st <> End) then print_opts_short (get_opts st)
 
 let rec prompt_user_command (st : State.t) : State.t =
   if 

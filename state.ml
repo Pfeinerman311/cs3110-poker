@@ -224,12 +224,12 @@ let flop state =
 
 let turn state = 
   let turn_card, remaining_deck = first_n state.deck 1 in
-  {state with community_cards= List.concat [turn_card;state.community_cards];
+  {state with community_cards= List.concat [state.community_cards;turn_card];
               deck = remaining_deck; call_cost=0;}
 
 let river state = 
   let river_card, remaining_deck = first_n state.deck 1 in
-  {state with community_cards= List.concat [river_card;state.community_cards];
+  {state with community_cards= List.concat [state.community_cards;river_card];
               deck = remaining_deck;call_cost=0;}
 
 let distribute_pot winners players pot = 
@@ -254,8 +254,9 @@ let get_winners state =
 let end_subgame state =
   let winners,_ = List.split (get_winners state) in
   let new_players = distribute_pot winners state.players state.pot |> 
-                    List.filter (fun x -> Poker.get_stack x > state.blind_amount
-                                ) |> List.map (Poker.set_active)
+                    List.filter (fun x -> 
+                        Poker.get_stack x > 2*state.blind_amount)
+                    |> List.map (Poker.set_active)
   in
   let new_state = 
     {state with players=new_players;
