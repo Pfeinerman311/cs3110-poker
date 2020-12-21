@@ -233,19 +233,25 @@ let deal state =
               call_cost=0;}
 
 let flop state = 
-  let flop_cards, remaining_deck = first_n state.deck 3 in
-  {state with community_cards=flop_cards; deck = remaining_deck;
-              call_cost=0;}
+  if List.length state.community_cards = 3 then state 
+  else
+    let flop_cards, remaining_deck = first_n state.deck 3 in
+    {state with community_cards=flop_cards; deck = remaining_deck;
+                call_cost=0;}
 
 let turn state = 
-  let turn_card, remaining_deck = first_n state.deck 1 in
-  {state with community_cards= List.concat [state.community_cards;turn_card];
-              deck = remaining_deck; call_cost=0;}
+  if List.length state.community_cards = 4 then state 
+  else
+    let turn_card, remaining_deck = first_n state.deck 1 in
+    {state with community_cards= List.concat [state.community_cards;turn_card];
+                deck = remaining_deck; call_cost=0;}
 
 let river state = 
-  let river_card, remaining_deck = first_n state.deck 1 in
-  {state with community_cards= List.concat [state.community_cards;river_card];
-              deck = remaining_deck;call_cost=0;}
+  if List.length state.community_cards = 5 then state 
+  else
+    let river_card, remaining_deck = first_n state.deck 1 in
+    {state with community_cards= List.concat [state.community_cards;river_card];
+                deck = remaining_deck;call_cost=0;}
 
 let distribute_pot winners players pot = 
   List.map (fun x -> if List.mem x winners 
