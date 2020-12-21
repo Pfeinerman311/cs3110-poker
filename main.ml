@@ -370,7 +370,9 @@ and play_command (st : State.t) (cmd : Command.t) : State.t =
         | Legal new_st -> 
           print_ansi ("\n You have chosen to raise " ^ string_of_int c ^ "\n") 
             "green";
-          play_round new_st to_next_stage 
+          if get_call_cost st = 0 then play_round new_st to_next_stage else (
+            print_ansi "\n You are not allowed to raise again.\n\n" "red"; 
+            st)
         | Illegal -> 
           print_ansi "\n You are unable to raise this amount\n\n" "red"; 
           st
