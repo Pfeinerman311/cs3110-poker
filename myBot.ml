@@ -477,22 +477,19 @@ module Make = functor (I : BotInfo) -> struct
 
   let get_action s p : Command.t = 
     let stage = State.get_stage s in 
-    let call_cost = State.get_call_cost s in 
-    let stack = Poker.get_stack p in 
     let num_players = List.length (State.get_active_players s) in
+    let com_cards = State.get_community_cards s in
+    let best_hand = Poker.get_best_hand p com_cards in 
     if num_players = 1 then 
       (** let _ = print_string "last player" in *)
       Call 
     else
       match stage with 
       | Init -> Call
-      | River -> if call_cost > stack then Fold 
-        else if 0 < call_cost  && call_cost <= stack then Call 
-        else if stack < 10 then Raise (Random.int stack) else
-          Raise (Random.int 10)
+      | River -> 
+        let winning_prob = calculate_prob_of_winning (best_hand.tp) [] in 
+        formulate_bet winning_prob s p
       | _ -> 
-        let com_cards = State.get_community_cards s in
-        let best_hand = Poker.get_best_hand p com_cards in 
         let outs_list = get_outs_list p best_hand com_cards in 
         let prob_list = calculate_prob_of_drawing_cards outs_list s in 
         let winning_prob = calculate_prob_of_winning (best_hand.tp) prob_list in 
