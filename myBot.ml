@@ -485,7 +485,10 @@ module Make = functor (I : BotInfo) -> struct
     else
       match stage with 
       | Init -> Call
-      | River -> if call_cost > stack then Fold else Call
+      | River -> if call_cost > stack then Fold 
+        else if 0 < call_cost  && call_cost <= stack then Call 
+        else if stack < 10 then Raise (Random.int stack) else
+          Raise (Random.int 10)
       | _ -> 
         let com_cards = State.get_community_cards s in
         let best_hand = Poker.get_best_hand p com_cards in 

@@ -88,6 +88,8 @@ val incr_subgame : t -> t
     {t with stage=Turn} *)
 val incr_stage : t -> t
 
+val decr_stage : t -> t
+
 (** [raise t p amount] returns legal of t if p has more than amount in stack
     and Illegal otherwise. t is also updated to include new call cost, pot, and 
     updated players *)

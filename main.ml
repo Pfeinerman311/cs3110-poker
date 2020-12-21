@@ -4,6 +4,8 @@ open Poker
 open List
 open Command
 
+exception End of State.t
+
 (* Initializing the module for bot players *)
 module TestBotInfo = struct
   let diff = Test
@@ -181,8 +183,8 @@ let play_bot_action
     begin match State.raise st p i with
       | Legal new_st -> 
         print_ansi 
-          ("\n " ^ (Poker.get_name p) ^ " has chosen to raise" ^
-           (st |> get_call_cost |> string_of_int) ^ "\n") "green"; 
+          ("\n " ^ (Poker.get_name p) ^ " has chosen to raise " ^
+           (new_st |> get_call_cost |> string_of_int) ^ "\n") "green"; 
         new_st
       | Illegal -> failwith "Bot cannot call"
     end
@@ -222,15 +224,7 @@ let play_bots (st : State.t) : State.t =
   |> tl
   |> fold_left play_bot_action st
 
-(** [play_round st] takes in a state [st] and transition function and returns 
-    the state of the game after said transition is applied. The pattern for each
-    individual round is:
-    i) Apply the transition function (one of "deal," "flop," "turn," "river")
-    ii) Process player_actions of the n-1 "bots." *)
-let play_round (st : State.t) (trans : State.t -> State.t) : State.t =
-  let after_bots = if (State.get_stage st = Init) then st else play_bots st in
-  let after_trans = transition after_bots trans in
-  after_trans
+
 
 (* [finish_game st] is a function that prints the necessary things once a game
    in state [st] is recognized to be over (aka there is only player with money
@@ -299,10 +293,31 @@ let print_malformed (st : State.t) : unit =
   in
   print_ansi msg "red"
 
+(** [play_round st] takes in a state [st] and transition function and returns 
+    the state of the game after said transition is applied. The pattern for each
+    individual round is:
+    i) Apply the transition function (one of "deal," "flop," "turn," "river")
+    ii) Process player_actions of the n-1 "bots." *)
+let rec play_round (st : State.t) (trans : State.t -> State.t) : State.t =
+  let after_bots = if (State.get_stage st = Init) then st else play_bots st in
+  let after_check = raise_check after_bots in
+  let after_trans = transition after_check trans in
+  print_state after_trans;
+  after_trans
+
+and raise_check st =
+  if get_call_cost st = 0 then st
+  else (
+    print_state st;
+    prompt_user_command st false)
+
+and skip_bots st trans =
+  transition st trans
+
 (* [play_command st cmd] takes in a commmand [cmd] from the user and uses it to
    pattern match it to a new state which is just a transition function applied
    to the input state [st] *)
-let rec play_command (st : State.t) (cmd : Command.t) : State.t =
+and play_command (st : State.t) (cmd : Command.t) : State.t =
   let 
     no_cards_msg = "\n You have not been dealt any cards yet."
                    ^ " Please pick a different option. \n\n" 
@@ -334,10 +349,12 @@ let rec play_command (st : State.t) (cmd : Command.t) : State.t =
     else
       begin match call st user with
         | Legal new_st -> if get_call_cost st <> 0 then
-            (print_ansi ("\n You have chosen to call" ^
-                         (st |> get_call_cost |> string_of_int) ^ "\n") "green")
-          else print_ansi "\n You have chosen to check\n" "green";
-          play_round new_st to_next_stage
+            (print_ansi ("\n You have chosen to call " ^
+                         (new_st |> get_call_cost |> string_of_int) ^ 
+                         "\n") "green";
+             skip_bots (decr_stage new_st) to_next_stage;)
+          else (print_ansi "\n You have chosen to check\n" "green";
+                play_round new_st to_next_stage)
         | Illegal -> 
           print_ansi (" \n You are unable to call" ^
                       (st |> get_call_cost |> string_of_int) ^ "\n\n") "red"; 
@@ -361,40 +378,7 @@ let rec play_command (st : State.t) (cmd : Command.t) : State.t =
   | Help -> print_opts (get_opts st); st
   | Quit -> print_ansi "\n\n Thanks for playing!\n\n" "green"; Stdlib.exit 0
 
-(* [print_state st] prints information about the state [st], primarily
-   - players (as well as their roles and stack amounts)
-   - the pot
-   - community cards (if any)
-   - the user's hole cards (if any)
-   - the user's viable responses *)
-let print_ante st =
-  if get_stage st = Init then
-    let small_blind = st |> get_blind_amount in
-    let big_blind = small_blind * 2 in
-    print_string (" | Ante: " ^ string_of_int big_blind ^ ", Small Blind: " ^
-                  string_of_int small_blind ^ ", Big Blind: " ^ 
-                  string_of_int big_blind ^ "\n")
-
-let print_state (st : State.t) : unit =
-  if (get_stage st <> End) then (
-    print_stage st;
-    print_player_info (st);
-    print_pot st;
-    print_community_cards st false;
-    print_hole_cards st false;
-    print_ante st;
-    print_opts_short (get_opts st))
-
-let print_prompt_line same =
-  if not same then let msg = 
-                     " Please input a command below, "
-                     ^ {|or type "help" for a list of possible commands.|}
-                     ^ "\n "
-    in
-    print_ansi msg "green";
-    line_div 80
-
-let rec prompt_user_command (st : State.t) (same : bool) : State.t =
+and prompt_user_command (st : State.t) (same : bool) : State.t =
   if 
     (st 
      |> get_active_players 
@@ -409,9 +393,43 @@ let rec prompt_user_command (st : State.t) (same : bool) : State.t =
     | exception Malformed -> print_malformed st; prompt_user_command st true
     | cmd -> begin match play_command st cmd with
         | same_st when same_st = st -> prompt_user_command same_st true
-        | new_st -> print_state new_st; new_st
+        | new_st -> new_st
       end
   )
+
+and print_prompt_line same =
+  if not same then let msg = 
+                     " Please input a command below, "
+                     ^ {|or type "help" for a list of possible commands.|}
+                     ^ "\n "
+    in
+    print_ansi msg "green";
+    line_div 80
+
+
+and print_ante st =
+  if get_stage st = Init then
+    let small_blind = st |> get_blind_amount in
+    let big_blind = small_blind * 2 in
+    print_string (" | Ante: " ^ string_of_int big_blind ^ ", Small Blind: " ^
+                  string_of_int small_blind ^ ", Big Blind: " ^ 
+                  string_of_int big_blind ^ "\n")
+
+(* [print_state st] prints information about the state [st], primarily
+   - players (as well as their roles and stack amounts)
+   - the pot
+   - community cards (if any)
+   - the user's hole cards (if any)
+   - the user's viable responses *)
+and print_state (st : State.t) : unit =
+  if (get_stage st <> End) then (
+    print_stage st;
+    print_player_info (st);
+    print_pot st;
+    print_community_cards st false;
+    print_hole_cards st false;
+    print_ante st;
+    print_opts_short (get_opts st))
 
 let rec game_flow (st : State.t) : unit =
   print_state st;

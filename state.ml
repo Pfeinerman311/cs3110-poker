@@ -153,6 +153,18 @@ let incr_stage state =
   in
   {state with game_stage = new_stage}
 
+let decr_stage state =
+  let new_stage =
+    match get_stage state with
+    | Init -> End
+    | Deal -> Init
+    | Flop -> Deal
+    | Turn -> Flop
+    | River -> Turn
+    | End -> River
+  in
+  {state with game_stage = new_stage}
+
 let get_player_by_id state id = 
   List.find (fun x -> Poker.get_ID x = id) state.players
 
