@@ -117,34 +117,34 @@ let compare c1 c2 =
   | 0 -> (c1 |> card_suit |> suit_to_int) - (c2 |> card_suit |> suit_to_int)
   | x -> x
 
-let rec hand_compare h1 h2 st =
+let rec hand_compare h1 h2 =
   let h1_type = h1.tp |> tp_to_int in
   let h2_type = h2.tp |> tp_to_int in
   match h1_type - h2_type with
-  | 0 -> hand_compare_helper h1 h2 st
+  | 0 -> hand_compare_helper h1 h2
   | x -> x
 
-and hand_compare_helper h1 h2 st =
+and hand_compare_helper h1 h2 =
   match h1.tp with
-  | Two_Pair -> two_pair_compare h1 h2 st
-  | Full_House -> full_house_compare h1 h2 st
-  | _ -> high_card_compare h1 h2 st
+  | Two_Pair -> two_pair_compare h1 h2
+  | Full_House -> full_house_compare h1 h2
+  | _ -> high_card_compare h1 h2
 
-and high_card_compare h1 h2 st =
+and high_card_compare h1 h2 =
   let h1_best = last_card h1.cards in
   let h2_best = last_card h2.cards in
   compare h1_best h2_best
 
-and two_pair_compare h1 h2 st =
-  match high_card_compare h1 h2 st with
+and two_pair_compare h1 h2 =
+  match high_card_compare h1 h2 with
   | 0 -> if List.length h1.cards >= 2 then 
-      two_pair_compare (sub_hand h1 2) (sub_hand h2 2) st
+      two_pair_compare (sub_hand h1 2) (sub_hand h2 2)
     else 0
   | x -> x
 
-and full_house_compare h1 h2 st =
-  match high_card_compare h1 h2 st with
-  | 0 -> two_pair_compare (sub_hand h1 2) (sub_hand h2 2) st
+and full_house_compare h1 h2 =
+  match high_card_compare h1 h2 with
+  | 0 -> two_pair_compare (sub_hand h1 2) (sub_hand h2 2)
   | x -> x
 
 

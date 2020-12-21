@@ -235,8 +235,8 @@ let h4 = {tp = Straight; cards = [(Three, Clubs);
                                   (Six, Clubs); (Seven, Diamonds)]}
 let h5 = {tp = Flush; cards = [(Three, Clubs); (Six, Clubs);
                                (Seven, Clubs); (Jack, Clubs); (Ace, Clubs)]}
-let h6 = {tp = Full_House; cards = [(Two, Diamonds); (Two, Hearts);
-                                    (Two, Spades); (Ace, Diamonds); 
+let h6 = {tp = Full_House; cards = [(Two, Hearts); (Two, Spades);
+                                    (Ace, Clubs); (Ace, Diamonds); 
                                     (Ace, Hearts)]}
 let h7 = {tp = Four_Kind; cards = [(Ace, Clubs); (Ace, Diamonds);
                                    (Ace, Hearts); (Ace, Spades)]}
