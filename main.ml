@@ -365,38 +365,41 @@ let print_state (st : State.t) : unit =
   print_hole_cards st false;
   if (get_stage st <> End) then print_opts_short (get_opts st)
 
-let rec prompt_user_command (st : State.t) : State.t =
+let print_prompt_line same =
+  if not same then let msg = 
+                     " Please input a command below, "
+                     ^ {|or type "help" for a list of possible commands.|}
+                     ^ "\n "
+    in
+    print_ansi msg "green";
+    line_div 80
+
+let rec prompt_user_command (st : State.t) (same : bool) : State.t =
   if 
     (st 
      |> get_active_players 
      |> List.filter (fun x -> get_ID x = 0) 
-     |> List.length = 0) || (st |> get_active_players  |> List.length = 1)
+     |> List.length = 0) || (st |> get_active_players |> List.length = 1)
   then play_command st Start 
-  else(
-    let msg = 
-      " Please input a command below, "
-      ^ {|or type "help" for a list of possible commands.|}
-      ^ "\n "
-    in
-    print_ansi msg "green";
-    line_div 80;
+  else (
+    print_prompt_line same;
     print_string (" > ");
     let input = read_line() in
     match parse (opt_to_keyword input) with
-    | exception Malformed -> print_malformed st; prompt_user_command st
+    | exception Malformed -> print_malformed st; prompt_user_command st true
     | cmd -> begin match play_command st cmd with
-        | same_st when same_st = st -> prompt_user_command same_st
+        | same_st when same_st = st -> prompt_user_command same_st true
         | new_st -> print_state new_st; new_st
       end
   )
 
 let rec game_flow (st : State.t) : unit =
   let init_st = st |> pay_big_blind |> pay_small_blind |> pay_ante in
-  let deal_st = prompt_user_command init_st in
-  let flop_st = prompt_user_command deal_st in
-  let turn_st = prompt_user_command flop_st in
-  let river_st = (prompt_user_command turn_st) in
-  let end_st = prompt_user_command river_st in
+  let deal_st = prompt_user_command init_st false in
+  let flop_st = prompt_user_command deal_st false in
+  let turn_st = prompt_user_command flop_st false in
+  let river_st = prompt_user_command turn_st false in
+  let end_st = prompt_user_command river_st false in
   (* let end_round = prompt_user_command_dep river_st in *)
   let after_subgame_st = (end_subgame end_st) in
   ANSITerminal.(print_string [Bold; blue] " WINNER(S): ");

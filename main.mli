@@ -3,7 +3,7 @@
 (** [prompt_user st] parses a user's input into a command, and performs the
     command by applying a it to the state [st] in order to advance the game
     and show relevant information to the user. *)
-val prompt_user_command : State.t -> State.t
+val prompt_user_command : State.t -> bool -> State.t
 
 (** [print_state st] prints information about the current state of the 
     game [st]. For example, the very first time print_state is called, it should 
