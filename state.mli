@@ -21,7 +21,6 @@ val get_subgame : t -> int
 (** [get stage t] returns the current stage of the subgame *)
 val get_stage : t -> stage
 
-
 (** returns the player after [player] in circular-list [players]
     requires: [player] in [players]
     Examples:
@@ -59,6 +58,9 @@ val get_pot : t -> int
 (** [get_call_cost t] returns the call cost
     the call cost is the price a player must bet to continue playing *)
 val get_call_cost : t -> int
+
+(** [get_blind_amount t] returns the blind amount in state [t] *)
+val get_blind_amount : t -> int
 
 (* [play_ante st] takes the amount of the ante out of all currently active
    players, then returns the state of the game in which all players have paid

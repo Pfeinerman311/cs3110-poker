@@ -92,6 +92,9 @@ let get_pot state =
 let get_call_cost state = 
   state.call_cost
 
+let get_blind_amount state =
+  state.blind_amount
+
 let pay_ante state =
   let updated_player_list = 
     List.map 
