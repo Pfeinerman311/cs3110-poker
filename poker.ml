@@ -64,6 +64,11 @@ let rec sub_list list n sub =
     | [] -> sub
     | h::t -> sub_list t (n-1) (h::sub)
 
+let sub_hand hand n =
+  match hand.cards with
+  | [] -> hand
+  | h::t -> {hand with cards = sub_list t n []}
+
 let rank_to_int rank =
   match rank with
   | Two -> 2
@@ -112,14 +117,36 @@ let compare c1 c2 =
   | 0 -> (c1 |> card_suit |> suit_to_int) - (c2 |> card_suit |> suit_to_int)
   | x -> x
 
-let hand_compare h1 h2 =
+let rec hand_compare h1 h2 st =
   let h1_type = h1.tp |> tp_to_int in
   let h2_type = h2.tp |> tp_to_int in
   match h1_type - h2_type with
-  | 0 -> let h1_best = last_card h1.cards in
-    let h2_best = last_card h2.cards in
-    compare h1_best h2_best
+  | 0 -> hand_compare_helper h1 h2 st
   | x -> x
+
+and hand_compare_helper h1 h2 st =
+  match h1.tp with
+  | Two_Pair -> two_pair_compare h1 h2 st
+  | Full_House -> full_house_compare h1 h2 st
+  | _ -> high_card_compare h1 h2 st
+
+and high_card_compare h1 h2 st =
+  let h1_best = last_card h1.cards in
+  let h2_best = last_card h2.cards in
+  compare h1_best h2_best
+
+and two_pair_compare h1 h2 st =
+  match high_card_compare h1 h2 st with
+  | 0 -> if List.length h1.cards >= 2 then 
+      two_pair_compare (sub_hand h1 2) (sub_hand h2 2) st
+    else 0
+  | x -> x
+
+and full_house_compare h1 h2 st =
+  match high_card_compare h1 h2 st with
+  | 0 -> two_pair_compare (sub_hand h1 2) (sub_hand h2 2) st
+  | x -> x
+
 
 let tal_compare t1 t2 =
   (rank_to_int t1.rank) -(rank_to_int t2.rank)
