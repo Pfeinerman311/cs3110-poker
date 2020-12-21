@@ -110,7 +110,7 @@ let pay_big_blind state =
   let updated_player_list = 
     List.map 
       (fun player -> 
-         if player = big_blind 
+         if Poker.get_ID player = Poker.get_ID big_blind 
          then (Poker.alter_stack player (-2*state.blind_amount)) 
          else player) 
       state.players
@@ -123,7 +123,7 @@ let pay_small_blind state =
   let updated_player_list = 
     List.map 
       (fun player -> 
-         if player = small_blind 
+         if Poker.get_ID player = Poker.get_ID small_blind 
          then (Poker.alter_stack player (-state.blind_amount)) 
          else player) 
       state.players
