@@ -88,6 +88,9 @@ val incr_subgame : t -> t
     {t with stage=Turn} *)
 val incr_stage : t -> t
 
+(** [decr_stage t] returns t with the previous state
+    example: if t was in stage Flop, [decr_state t] would return
+    {t with stage=Deal} *)
 val decr_stage : t -> t
 
 (** [raise t p amount] returns legal of t if p has more than amount in stack
