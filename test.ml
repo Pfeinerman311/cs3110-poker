@@ -276,11 +276,22 @@ let test_same_rank
       assert_equal ~printer:string_of_bool 
         expected (same_rank card1 card2))
 
+let test_card_function
+    (name : string)
+    (card : card)
+    (deck : card list)
+    (f) = 
+  name >:: (fun _ ->
+      assert_equal 
+        card (f deck))
+
 let a_clubs =  (Ace, Clubs)
 let a_diamonds = (Ace, Diamonds)
 let j_clubs = (Jack, Clubs)
 let j_spades = (Jack, Spades)
 let three_spades = (Three, Spades)
+
+let card_list = [a_clubs;a_diamonds;j_clubs;j_spades;three_spades]
 
 let poker_tests = 
   [
@@ -306,6 +317,10 @@ let poker_tests =
     test_same_rank "test same rank base case" a_clubs a_diamonds true;
     test_same_rank "test same rank base case" j_clubs j_spades true;
     test_same_rank "test same rank different case" j_clubs a_clubs false;
+    test_card_function "test first card" a_clubs card_list first_card;
+    test_card_function "test first card singleton" a_clubs [a_clubs] first_card;
+    test_card_function "test last card" three_spades card_list last_card;
+    test_card_function "test last card singleton" a_clubs [a_clubs] last_card;
   ]
 
 let test_parse_command 
@@ -351,6 +366,10 @@ let alice = {name = "Alice"; id = 1; active = true; stack = 100;
              hole_cards = [(Ace, Clubs); (Ace, Diamonds);]}
 let bob = {name = "Bob"; id = 2; active = true; stack = 100; 
            hole_cards = [(Queen, Clubs); (Queen, Diamonds)]}
+let charlie = {name = "Charlie"; id = 3; active = true; stack = 100; 
+               hole_cards = [(Queen, Clubs); (Queen, Diamonds)]}
+let debby = {name = "Debby"; id = 4; active = true; stack = 100; 
+             hole_cards = [(Queen, Clubs); (Queen, Diamonds)]}
 
 let pre_end_state = 
   let init =  match init_state [alice;bob] 0 with
@@ -387,6 +406,17 @@ let test_first_n
       assert_equal ~printer:string_of_int
         n (List.length first)) 
 
+let test_get_next_player
+    (name : string)
+    (list)
+    (player : player)
+    (expected : player) = 
+  name >:: (fun _ ->
+      assert_equal 
+        expected (get_next_player player list)  )
+
+let next_player_players = [alice;bob;charlie;debby]
+
 let state_tests = [
   pot_test "simple pot increase test with a player raising" players 350;
   deal_test "check 2 players are dealt cards" players;
@@ -398,6 +428,17 @@ let state_tests = [
   test_first_n "test right number, entire list." [1;2;3;4] 4;
   test_first_n "test empty list" [] 0;
   test_first_n "test zero first list" [1;2;4;5] 0;
+  test_get_next_player "basic test for get next player" next_player_players
+    alice bob;
+  test_get_next_player "basic test for get next player" next_player_players
+    bob charlie;
+  test_get_next_player "basic test for get next player" next_player_players
+    charlie debby;
+  test_get_next_player "get next player test, end of list" next_player_players
+    debby alice;
+  test_get_next_player "test get next player, only one player" [alice] alice
+    alice;
+
 ]
 
 let ex_st =

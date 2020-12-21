@@ -1,7 +1,7 @@
 (** The module that handles each state and transitions for a poker game. *)
 
 (** [stage] is the abstract type of the stage of the game *)
-type stage = Init | Deal | Flop | Turn | River
+type stage = Init | Deal | Flop | Turn | River | End
 
 (** [t] is the abstract type of values representing the game state. *)
 type t
