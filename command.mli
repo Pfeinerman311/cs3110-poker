@@ -1,4 +1,4 @@
-(** The abstract type of player actions *)
+(** The module handeling player actions *)
 
 (** A command consists of an action and possibly an action amount as well. For
     example, a command can be ["start"] or it can also be ["Raise 56"]. The
