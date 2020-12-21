@@ -53,7 +53,7 @@ let init_state players blind=
                  deck=Poker.get_shuffled_deck (); 
                  small_blind = (get_next_player (List.hd players) players); 
                  blind_amount=blind;}
-    in
+    in 
     if List.length players= 2 then 
       Legal {state with big_blind=state.small_blind;
                         small_blind= state.big_blind;
