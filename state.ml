@@ -274,10 +274,12 @@ let get_winners state =
 
 let end_subgame state =
   let winners,_ = List.split (get_winners state) in
-  let new_players = distribute_pot winners state.players state.pot |> 
-                    List.filter (fun x -> 
-                        Poker.get_stack x > 2*state.blind_amount)
-                    |> List.map (Poker.set_active)
+  let new_players' = distribute_pot winners state.players state.pot |> 
+                     List.filter (fun x -> 
+                         Poker.get_stack x > 2*state.blind_amount)
+                     |> List.map (Poker.set_active) 
+  in
+  let new_players =  List.map (fun x -> Poker.set_hole_cards x []) new_players'
   in
   let new_state = 
     {state with players=new_players;
