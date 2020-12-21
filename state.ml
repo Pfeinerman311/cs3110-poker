@@ -1,4 +1,4 @@
-type stage = Init | Deal | Flop | Turn | River
+type stage = Init | Deal | Flop | Turn | River | End
 
 let string_of_stage_to_string stage = 
   match stage with 
@@ -7,6 +7,7 @@ let string_of_stage_to_string stage =
   | Flop -> "Flop"
   | Turn -> "Turn"
   | River -> "River"
+  | End -> "End"
 
 type t = {
   subgame_number: int;
@@ -141,7 +142,8 @@ let incr_stage state =
     | Deal -> Flop
     | Flop -> Turn
     | Turn -> River
-    | River -> Deal
+    | River -> End
+    | End -> Deal
   in
   {state with game_stage = new_stage}
 

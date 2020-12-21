@@ -39,6 +39,7 @@ let print_ansi s color : unit =
   | "yellow" -> ANSITerminal.(print_string [yellow] s)
   | "magenta" -> ANSITerminal.(print_string [magenta] s)
   | "cyan" -> ANSITerminal.(print_string [cyan] s)
+  | "bold" -> ANSITerminal.(print_string [Bold] s)
   | _ -> ANSITerminal.(print_string [green] s)
 
 (* [build_table] creates a list of players with a given stack size (100) for
@@ -65,7 +66,8 @@ let print_stage (st : State.t) : unit =
   | Deal -> print_ansi ("Deal\n") "cyan";
   | Flop -> print_ansi ("Flop\n") "magenta";
   | Turn -> print_ansi("Turn\n") "yellow";
-  | River -> print_ansi ("River\n") "green"
+  | River -> print_ansi ("River\n") "green";
+  | End -> print_ansi ("End\n") "bold"
 
 (* [get_active_players table] takes in a state [st] and returns out those
    players which are still in the game, aka, those which have an active field
@@ -239,6 +241,7 @@ let opt_to_keyword (input : string) : string =
   match input with
   | "ante" -> "go"
   | "check" -> "call"
+  | "ok" -> "go"
   | _ -> input
 
 let opt_descriptions (opt : string) : string =
@@ -279,6 +282,7 @@ let get_opts (st : State.t) : string list =
   | Flop -> ["hand"; "check"; "call"; "fold"; "raise"; "leave"]
   | Turn -> ["hand"; "check"; "call"; "fold"; "raise"; "leave"]
   | River -> ["hand"; "check"; "call"; "fold"; "raise"; "leave"]
+  | End -> ["ok"]
 
 let print_malformed (st : State.t) : unit =
   let 
@@ -301,7 +305,8 @@ let rec play_command (st : State.t) (cmd : Command.t) : State.t =
     | Deal -> flop
     | Flop -> turn
     | Turn -> river
-    | River -> deal
+    | River -> (fun st -> st)
+    | End -> deal
   in
   let user = get_player_by_id st 0 in
   match cmd with
@@ -388,9 +393,10 @@ let rec game_flow (st : State.t) : unit =
   let deal_st = prompt_user_command init_st in
   let flop_st = prompt_user_command deal_st in
   let turn_st = prompt_user_command flop_st in
-  let river_st = prompt_user_command turn_st in
+  let river_st = (prompt_user_command turn_st) in
+  let end_st = prompt_user_command river_st in
   (* let end_round = prompt_user_command_dep river_st in *)
-  let after_subgame_st = (end_subgame river_st) in
+  let after_subgame_st = (end_subgame end_st) in
   ANSITerminal.(print_string [Bold; blue] " WINNER(S): ");
   print_winners ((get_winners river_st));
   print_string ("\n");
