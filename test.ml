@@ -276,11 +276,22 @@ let test_same_rank
       assert_equal ~printer:string_of_bool 
         expected (same_rank card1 card2))
 
+let test_card_function
+    (name : string)
+    (card : card)
+    (deck : card list)
+    (f) = 
+  name >:: (fun _ ->
+      assert_equal 
+        card (f deck))
+
 let a_clubs =  (Ace, Clubs)
 let a_diamonds = (Ace, Diamonds)
 let j_clubs = (Jack, Clubs)
 let j_spades = (Jack, Spades)
 let three_spades = (Three, Spades)
+
+let card_list = [a_clubs;a_diamonds;j_clubs;j_spades;three_spades]
 
 let poker_tests = 
   [
@@ -306,6 +317,10 @@ let poker_tests =
     test_same_rank "test same rank base case" a_clubs a_diamonds true;
     test_same_rank "test same rank base case" j_clubs j_spades true;
     test_same_rank "test same rank different case" j_clubs a_clubs false;
+    test_card_function "test first card" a_clubs card_list first_card;
+    test_card_function "test first card singleton" a_clubs [a_clubs] first_card;
+    test_card_function "test last card" three_spades card_list last_card;
+    test_card_function "test last card singleton" a_clubs [a_clubs] last_card;
   ]
 
 let test_parse_command 
@@ -421,6 +436,8 @@ let state_tests = [
     charlie debby;
   test_get_next_player "get next player test, end of list" next_player_players
     debby alice;
+  test_get_next_player "test get next player, only one player" [alice] alice
+    alice;
 
 ]
 
